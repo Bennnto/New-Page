@@ -15,7 +15,7 @@ import {
   LinearProgress,
   Paper,
 } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import { Grid } from '@mui/material';
 import { CloudUpload, Delete, Image, VideoFile, Description } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useAuth } from '../../contexts/AuthContext';
