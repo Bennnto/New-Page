@@ -1,0 +1,8 @@
+# Files to ignore during Heroku build
+*.md
+.env.example
+start-*.sh
+quick-setup.sh
+SETUP_GUIDE.md
+deployment-fix.md
+DEPLOYMENT_STATUS_REPORT.md
