@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: page-project
+    env: node
+    plan: free
+    buildCommand: npm install && cd client && npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MAX_FILE_SIZE
+        value: 52428800
+      - key: ALLOWED_FILE_TYPES
+        value: image/jpeg,image/png,image/gif,video/mp4,video/webm,application/pdf
+      - key: CLIENT_URL
+        value: https://page-project.onrender.com
