@@ -15,7 +15,6 @@ import {
   LinearProgress,
   Paper,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import { CloudUpload, Delete, Image, VideoFile, Description } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useAuth } from '../../contexts/AuthContext';
@@ -162,9 +161,9 @@ const MediaUpload: React.FC = () => {
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
 
-      <Grid container spacing={4}>
+      
         {/* Upload Area */}
-        <Grid item xs={12} lg={8}>
+        
           <Card>
             <CardContent>
               {/* Drop Zone */}
@@ -246,10 +245,10 @@ const MediaUpload: React.FC = () => {
               )}
             </CardContent>
           </Card>
-        </Grid>
+        
 
         {/* Form Fields */}
-        <Grid item xs={12} lg={4}>
+        
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -333,8 +332,8 @@ const MediaUpload: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        
+      
     </Box>
   );
 };

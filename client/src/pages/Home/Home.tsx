@@ -10,7 +10,6 @@ import {
   Chip,
   useTheme,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import {
   CloudUpload,
   Payment,
@@ -158,9 +157,9 @@ const Home: React.FC = () => {
           Powerful Features
         </Typography>
         
-        <Grid container spacing={4}>
+        
           {features.map((feature, index) => (
-            <Grid item xs={12} md={6} lg={4} key={index}>
+            
               <Card 
                 sx={{ 
                   height: '100%',
@@ -203,9 +202,9 @@ const Home: React.FC = () => {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
+            
           ))}
-        </Grid>
+        
       </Box>
 
       {/* Pricing Section */}
@@ -220,7 +219,7 @@ const Home: React.FC = () => {
           Simple Pricing
         </Typography>
         
-        <Grid container spacing={4} justifyContent="center">
+        
           {[
             {
               plan: 'Free',
@@ -241,7 +240,7 @@ const Home: React.FC = () => {
               popular: false,
             },
           ].map((tier, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            
               <Card 
                 sx={{ 
                   position: 'relative',
@@ -295,9 +294,9 @@ const Home: React.FC = () => {
                   </Button>
                 </CardActions>
               </Card>
-            </Grid>
+            
           ))}
-        </Grid>
+        
       </Box>
     </Container>
   );

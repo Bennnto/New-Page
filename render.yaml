@@ -3,7 +3,7 @@ services:
     name: page-project
     env: node
     plan: free
-    buildCommand: ./build-render.sh
+    buildCommand: npm install && cd client && npm install --legacy-peer-deps && CI=false GENERATE_SOURCEMAP=false npm run build
     startCommand: node server.js
     envVars:
       - key: NODE_ENV

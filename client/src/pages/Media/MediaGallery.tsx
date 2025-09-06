@@ -16,7 +16,6 @@ import {
   IconButton,
   Pagination,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import {
   Favorite,
   FavoriteBorder,
@@ -85,8 +84,8 @@ const MediaGallery: React.FC = () => {
 
       {/* Filters */}
       <Box mb={4}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+        
+          
             <TextField
               fullWidth
               placeholder="Search media..."
@@ -96,8 +95,8 @@ const MediaGallery: React.FC = () => {
                 startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
               }}
             />
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          
+          
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
               <Select
@@ -111,8 +110,8 @@ const MediaGallery: React.FC = () => {
                 <MenuItem value="document">Documents</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          
+          
             <FormControl fullWidth>
               <InputLabel>Sort By</InputLabel>
               <Select
@@ -126,8 +125,8 @@ const MediaGallery: React.FC = () => {
                 <MenuItem value="views">Most Viewed</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} md={4}>
+          
+          
             <Button 
               variant="contained" 
               size="large"
@@ -136,14 +135,14 @@ const MediaGallery: React.FC = () => {
             >
               Upload Media
             </Button>
-          </Grid>
-        </Grid>
+          
+        
       </Box>
 
       {/* Media Grid */}
-      <Grid container spacing={3} mb={4}>
+      
         {mediaItems.map((item) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
+          
             <Card 
               sx={{ 
                 height: '100%',
@@ -245,9 +244,9 @@ const MediaGallery: React.FC = () => {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          
         ))}
-      </Grid>
+      
 
       {/* Pagination */}
       <Box display="flex" justifyContent="center">

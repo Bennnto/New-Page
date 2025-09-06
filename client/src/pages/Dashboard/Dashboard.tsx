@@ -15,7 +15,6 @@ import {
   ListItemSecondaryAction,
   IconButton,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import {
   CloudUpload,
   Visibility,
@@ -64,243 +63,246 @@ const Dashboard: React.FC = () => {
       </Box>
 
       {/* Stats Cards */}
-      <Grid container spacing={3} mb={4}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="text.secondary" gutterBottom variant="body2">
-                    Media Uploaded
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {stats.mediaUploaded}
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: 'primary.main' }}>
-                  <CloudUpload />
-                </Avatar>
+      <Box 
+        sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
+          gap: 3, 
+          mb: 4 
+        }}
+      >
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="text.secondary" gutterBottom variant="body2">
+                  Media Uploaded
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  {stats.mediaUploaded}
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              <Avatar sx={{ bgcolor: 'primary.main' }}>
+                <CloudUpload />
+              </Avatar>
+            </Box>
+            <Box mt={2}>
+              <Typography variant="body2" color="text.secondary">
+                <TrendingUp fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                +12% from last month
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="text.secondary" gutterBottom variant="body2">
-                    Total Views
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {stats.totalViews.toLocaleString()}
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: 'success.main' }}>
-                  <Visibility />
-                </Avatar>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="text.secondary" gutterBottom variant="body2">
+                  Total Views
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  {stats.totalViews.toLocaleString()}
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              <Avatar sx={{ bgcolor: 'info.main' }}>
+                <Visibility />
+              </Avatar>
+            </Box>
+            <Box mt={2}>
+              <Typography variant="body2" color="text.secondary">
+                <TrendingUp fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                +8% from last month
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="text.secondary" gutterBottom variant="body2">
-                    Total Likes
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {stats.totalLikes}
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: 'error.main' }}>
-                  <Favorite />
-                </Avatar>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="text.secondary" gutterBottom variant="body2">
+                  Total Likes
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  {stats.totalLikes}
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              <Avatar sx={{ bgcolor: 'error.main' }}>
+                <Favorite />
+              </Avatar>
+            </Box>
+            <Box mt={2}>
+              <Typography variant="body2" color="text.secondary">
+                <TrendingUp fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                +15% from last month
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="text.secondary" gutterBottom variant="body2">
-                    Subscription
-                  </Typography>
-                  <Chip 
-                    label={user.subscription.plan.toUpperCase()} 
-                    color="primary" 
-                    variant="outlined"
-                    sx={{ fontWeight: 600 }}
-                  />
-                </Box>
-                <Avatar sx={{ bgcolor: 'warning.main' }}>
-                  <Payment />
-                </Avatar>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="text.secondary" gutterBottom variant="body2">
+                  Subscription
+                </Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  {user.subscription?.plan || 'Free'}
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              <Avatar sx={{ bgcolor: 'success.main' }}>
+                <Payment />
+              </Avatar>
+            </Box>
+            <Box mt={2}>
+              <Chip 
+                label={user.subscription?.status || 'Active'} 
+                color="success" 
+                size="small" 
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
 
-      <Grid container spacing={3}>
+      {/* Content Grid */}
+      <Box 
+        sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
+          gap: 3 
+        }}
+      >
         {/* Storage Usage */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Storage Usage
-              </Typography>
-              <Box mb={2}>
-                <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    {stats.storageUsed} GB of {stats.storageLimit} GB used
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {storagePercentage.toFixed(1)}%
-                  </Typography>
-                </Box>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={storagePercentage} 
-                  sx={{ height: 8, borderRadius: 4 }}
-                />
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              Storage Usage
+            </Typography>
+            <Box mt={3}>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2">
+                  {stats.storageUsed} GB used
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {stats.storageLimit} GB total
+                </Typography>
               </Box>
-              {storagePercentage > 80 && (
-                <Box mt={2}>
-                  <Typography variant="body2" color="warning.main">
-                    ⚠️ You're running low on storage space.
-                  </Typography>
-                  <Button 
-                    size="small" 
-                    onClick={() => navigate('/subscription')}
-                    sx={{ mt: 1 }}
-                  >
-                    Upgrade Plan
-                  </Button>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Quick Actions */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Quick Actions
+              <LinearProgress 
+                variant="determinate" 
+                value={storagePercentage} 
+                sx={{ height: 8, borderRadius: 4 }}
+              />
+              <Typography variant="body2" color="text.secondary" mt={1}>
+                {(stats.storageLimit - stats.storageUsed).toFixed(1)} GB remaining
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<CloudUpload />}
-                    onClick={() => navigate('/upload')}
-                    sx={{ py: 1.5 }}
-                  >
-                    Upload Media
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<TrendingUp />}
-                    onClick={() => navigate('/media?user=me')}
-                    sx={{ py: 1.5 }}
-                  >
-                    View Analytics
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Payment />}
-                    onClick={() => navigate('/subscription')}
-                    sx={{ py: 1.5 }}
-                  >
-                    Billing
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={() => navigate('/profile')}
-                    sx={{ py: 1.5 }}
-                  >
-                    Settings
-                  </Button>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Box>
+            
+            <Box mt={3}>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => navigate('/subscription')}
+              >
+                Upgrade Storage
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Recent Media */}
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Recent Media
-                </Typography>
-                <Button 
-                  startIcon={<Add />}
-                  onClick={() => navigate('/upload')}
-                >
-                  Upload New
-                </Button>
-              </Box>
-              
-              <List>
-                {recentMedia.map((item) => (
-                  <ListItem key={item.id} divider>
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: 'primary.main' }}>
-                        {item.type === 'image' ? '📷' : '🎥'}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={item.title}
-                      secondary={
-                        <Box display="flex" alignItems="center" gap={2}>
-                          <Typography variant="body2" color="text.secondary">
-                            {item.views} views
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {item.createdAt}
-                          </Typography>
-                        </Box>
-                      }
+        <Card>
+          <CardContent>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Recent Media
+              </Typography>
+              <IconButton size="small">
+                <MoreVert />
+              </IconButton>
+            </Box>
+            
+            <List disablePadding>
+              {recentMedia.map((item, index) => (
+                <ListItem key={item.id} divider={index < recentMedia.length - 1}>
+                  <ListItemAvatar>
+                    <Avatar>
+                      {item.type === 'image' ? '📷' : '🎥'}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={item.title}
+                    secondary={`${item.views} views • ${item.createdAt}`}
+                  />
+                  <ListItemSecondaryAction>
+                    <Chip 
+                      label={item.type} 
+                      size="small" 
+                      color={item.type === 'image' ? 'primary' : 'secondary'}
                     />
-                    <ListItemSecondaryAction>
-                      <IconButton edge="end">
-                        <MoreVert />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                ))}
-              </List>
-              
-              <Box textAlign="center" mt={2}>
-                <Button onClick={() => navigate('/media?user=me')}>
-                  View All Media
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+            
+            <Button
+              variant="text"
+              fullWidth
+              sx={{ mt: 2 }}
+              onClick={() => navigate('/media')}
+            >
+              View All Media
+            </Button>
+          </CardContent>
+        </Card>
+      </Box>
+
+      {/* Quick Actions */}
+      <Card sx={{ mt: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+            Quick Actions
+          </Typography>
+          
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              gap: 2, 
+              flexDirection: { xs: 'column', sm: 'row' },
+              mt: 2 
+            }}
+          >
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => navigate('/media/upload')}
+              sx={{ flex: 1 }}
+            >
+              Upload Media
+            </Button>
+            
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/media')}
+              sx={{ flex: 1 }}
+            >
+              Browse Gallery
+            </Button>
+            
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/profile')}
+              sx={{ flex: 1 }}
+            >
+              Edit Profile
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
     </Box>
   );
 };
