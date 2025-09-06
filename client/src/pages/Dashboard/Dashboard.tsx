@@ -15,7 +15,7 @@ import {
   ListItemSecondaryAction,
   IconButton,
 } from '@mui/material';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   CloudUpload,
   Visibility,

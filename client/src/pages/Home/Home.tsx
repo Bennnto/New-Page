@@ -10,7 +10,7 @@ import {
   Chip,
   useTheme,
 } from '@mui/material';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   CloudUpload,
   Payment,

@@ -12,13 +12,17 @@ import {
   InputAdornment,
   IconButton,
 } from '@mui/material';
-import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
-import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
+import { 
+  Visibility, 
+  VisibilityOff, 
+  Email, 
+  Lock 
+} from '@mui/icons-material';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -28,9 +32,6 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Get the intended destination from navigation state
-  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,7 +48,7 @@ const Login: React.FC = () => {
 
     try {
       await login(formData.email, formData.password);
-      navigate(from, { replace: true });
+      navigate('/dashboard');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -56,7 +57,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8, mb: 4 }}>
+    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
       <Card 
         sx={{ 
           borderRadius: 3,
@@ -165,7 +166,7 @@ const Login: React.FC = () => {
                   color="primary"
                   sx={{ textDecoration: 'none', fontWeight: 600 }}
                 >
-                  Sign up here
+                  Create one here
                 </Link>
               </Typography>
             </Box>
