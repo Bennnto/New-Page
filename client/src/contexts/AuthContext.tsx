@@ -50,8 +50,9 @@ interface RegisterData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// API base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// API base URL - use current domain for production
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (process.env.NODE_ENV === 'production' ? window.location.origin : 'http://localhost:5000');
 
 // Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
