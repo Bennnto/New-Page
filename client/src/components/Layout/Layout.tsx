@@ -16,17 +16,12 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Home,
-  Dashboard,
-  CloudUpload,
-  Photo,
-  Announcement,
   Person,
   Settings,
   Logout,
   Notifications,
 } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from './Sidebar';
 
@@ -38,7 +33,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, logout } = useAuth();
 
   const [mobileOpen, setMobileOpen] = useState(false);

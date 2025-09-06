@@ -1,87 +1,122 @@
 import React from 'react';
 import {
-  Box,
   Container,
   Typography,
   Button,
   Card,
   CardContent,
   CardActions,
-  Chip,
+  Box,
   useTheme,
+  Chip,
+  Avatar,
 } from '@mui/material';
 import {
-  CloudUpload,
-  Payment,
-  Announcement,
+  PlayArrow,
   Security,
-  Speed,
-  Group,
+  Groups,
+  Chat,
+  AdminPanelSettings,
+  Star,
+  LibraryBooks,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 
 const Home: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const features = [
     {
-      icon: <CloudUpload sx={{ fontSize: 40 }} />,
-      title: 'Media Upload & Management',
-      description: 'Upload, organize, and share your images, videos, and documents with ease.',
-      color: theme.palette.primary.main,
+      icon: <LibraryBooks sx={{ fontSize: 40 }} />,
+      title: 'Premium Media Library',
+      description: 'Access exclusive content curated by our admin team. High-quality media available only to subscribers.',
+      color: 'primary.main',
     },
     {
-      icon: <Payment sx={{ fontSize: 40 }} />,
-      title: 'Flexible Payment System',
-      description: 'Secure payment processing with Stripe integration for subscriptions and one-time payments.',
-      color: theme.palette.success.main,
+      icon: <Chat sx={{ fontSize: 40 }} />,
+      title: 'Community Chat Room',
+      description: 'Connect with other members in our exclusive chat room. Share thoughts and engage with the community.',
+      color: 'secondary.main',
     },
     {
-      icon: <Announcement sx={{ fontSize: 40 }} />,
-      title: 'Smart Announcements',
-      description: 'Stay informed with targeted announcements and important updates.',
-      color: theme.palette.info.main,
+      icon: <AdminPanelSettings sx={{ fontSize: 40 }} />,
+      title: 'Admin-Curated Content',
+      description: 'All content is carefully selected and uploaded by our admin team to ensure premium quality.',
+      color: 'success.main',
     },
     {
       icon: <Security sx={{ fontSize: 40 }} />,
       title: 'Secure & Private',
-      description: 'Advanced security features with customizable privacy controls for your content.',
-      color: theme.palette.warning.main,
+      description: 'Your privacy is our priority. Enjoy content in a secure, subscription-only environment.',
+      color: 'error.main',
+    },
+  ];
+
+  const plans = [
+    {
+      name: 'Monthly',
+      price: '$19.99',
+      period: '/month',
+      features: [
+        'Full Media Library Access',
+        'Community Chat Room',
+        'Admin Announcements',
+        'Mobile & Desktop Access',
+        'HD Streaming Quality',
+      ],
+      popular: false,
+      color: 'primary',
     },
     {
-      icon: <Speed sx={{ fontSize: 40 }} />,
-      title: 'High Performance',
-      description: 'Fast uploads, quick access, and optimized media delivery for the best experience.',
-      color: theme.palette.secondary.main,
+      name: 'Quarterly',
+      price: '$49.99',
+      period: '/3 months',
+      originalPrice: '$59.97',
+      features: [
+        'Everything in Monthly',
+        'Priority Chat Support',
+        'Early Access to New Content',
+        '4K Streaming Quality',
+        'Download for Offline',
+      ],
+      popular: true,
+      color: 'secondary',
     },
     {
-      icon: <Group sx={{ fontSize: 40 }} />,
-      title: 'Community Features',
-      description: 'Connect with other users, like and comment on media, and build your network.',
-      color: theme.palette.error.main,
+      name: 'Annual',
+      price: '$159.99',
+      period: '/year',
+      originalPrice: '$239.88',
+      features: [
+        'Everything in Quarterly',
+        'VIP Community Status',
+        'Exclusive Member Events',
+        'Direct Admin Contact',
+        'Lifetime Price Lock',
+      ],
+      popular: false,
+      color: 'success',
     },
   ];
 
   return (
     <Container maxWidth="lg">
       {/* Hero Section */}
-      <Box 
-        textAlign="center" 
-        py={8}
+      <Box
         sx={{
+          textAlign: 'center',
+          py: { xs: 8, md: 12 },
           background: `linear-gradient(135deg, ${theme.palette.primary.main}20 0%, ${theme.palette.secondary.main}20 100%)`,
           borderRadius: 4,
           mb: 8,
         }}
       >
-        <Typography 
-          variant="h2" 
-          component="h1" 
+        <Typography
+          variant="h2"
+          component="h1"
           gutterBottom
-          sx={{ 
+          sx={{
             fontWeight: 800,
             background: 'linear-gradient(45deg, #4f46e5 30%, #f59e0b 90%)',
             backgroundClip: 'text',
@@ -90,213 +125,290 @@ const Home: React.FC = () => {
             mb: 3,
           }}
         >
-          Welcome to Page Project
-        </Typography>
-        <Typography 
-          variant="h5" 
-          color="text.secondary" 
-          paragraph
-          sx={{ maxWidth: '600px', mx: 'auto', mb: 4 }}
-        >
-          The complete solution for media management, payments, and user engagement. 
-          Upload, share, and monetize your content with powerful tools.
+          UNDERCOVERED
         </Typography>
         
+        <Typography
+          variant="h5"
+          component="h2"
+          gutterBottom
+          sx={{ 
+            fontWeight: 400,
+            color: 'text.secondary',
+            mb: 4,
+            maxWidth: 600,
+            mx: 'auto'
+          }}
+        >
+          Premium Media Library & Exclusive Community
+        </Typography>
+
+        <Typography
+          variant="body1"
+          sx={{ 
+            mb: 6,
+            fontSize: '1.2rem',
+            color: 'text.secondary',
+            maxWidth: 800,
+            mx: 'auto'
+          }}
+        >
+          Join our exclusive community and access premium content curated by our admin team. 
+          Connect with members in our private chat room and stay updated with exclusive announcements.
+        </Typography>
+
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {user ? (
-            <>
-              <Button 
-                variant="contained" 
-                size="large"
-                onClick={() => navigate('/dashboard')}
-                sx={{ px: 4, py: 1.5, borderRadius: 3 }}
-              >
-                Go to Dashboard
-              </Button>
-              <Button 
-                variant="outlined" 
-                size="large"
-                onClick={() => navigate('/upload')}
-                sx={{ px: 4, py: 1.5, borderRadius: 3 }}
-              >
-                Upload Media
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button 
-                variant="contained" 
-                size="large"
-                onClick={() => navigate('/register')}
-                sx={{ px: 4, py: 1.5, borderRadius: 3 }}
-              >
-                Get Started Free
-              </Button>
-              <Button 
-                variant="outlined" 
-                size="large"
-                onClick={() => navigate('/login')}
-                sx={{ px: 4, py: 1.5, borderRadius: 3 }}
-              >
-                Sign In
-              </Button>
-            </>
-          )}
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Star />}
+            onClick={() => navigate('/register')}
+            sx={{
+              px: 4,
+              py: 2,
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              borderRadius: 3,
+              textTransform: 'none',
+            }}
+          >
+            Start Subscription
+          </Button>
+          
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => navigate('/login')}
+            sx={{
+              px: 4,
+              py: 2,
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              borderRadius: 3,
+              textTransform: 'none',
+            }}
+          >
+            Member Login
+          </Button>
         </Box>
       </Box>
 
       {/* Features Section */}
       <Box mb={8}>
-        <Typography 
-          variant="h3" 
-          component="h2" 
-          textAlign="center" 
+        <Typography
+          variant="h3"
+          component="h2"
+          textAlign="center"
           gutterBottom
           sx={{ fontWeight: 700, mb: 6 }}
         >
-          Powerful Features
+          Why Choose Undercovered?
         </Typography>
         
-        
+        <Box 
+          sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+            gap: 4 
+          }}
+        >
           {features.map((feature, index) => (
-            
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
-                  },
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                  <Box 
+            <Card 
+              key={index}
+              sx={{ 
+                height: '100%',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: theme.shadows[8],
+                }
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box display="flex" alignItems="center" mb={3}>
+                  <Avatar 
                     sx={{ 
-                      color: feature.color,
-                      mb: 2,
-                      display: 'flex',
-                      justifyContent: 'center',
+                      bgcolor: feature.color,
+                      width: 64,
+                      height: 64,
+                      mr: 2
                     }}
                   >
                     {feature.icon}
-                  </Box>
-                  <Typography 
-                    variant="h6" 
-                    component="h3" 
-                    gutterBottom
-                    textAlign="center"
-                    sx={{ fontWeight: 600 }}
-                  >
+                  </Avatar>
+                  <Typography variant="h5" component="h3" sx={{ fontWeight: 600 }}>
                     {feature.title}
                   </Typography>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    textAlign="center"
-                    sx={{ lineHeight: 1.6 }}
-                  >
-                    {feature.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            
+                </Box>
+                <Typography variant="body1" color="text.secondary">
+                  {feature.description}
+                </Typography>
+              </CardContent>
+            </Card>
           ))}
-        
+        </Box>
       </Box>
 
       {/* Pricing Section */}
       <Box mb={8}>
-        <Typography 
-          variant="h3" 
-          component="h2" 
-          textAlign="center" 
+        <Typography
+          variant="h3"
+          component="h2"
+          textAlign="center"
           gutterBottom
-          sx={{ fontWeight: 700, mb: 6 }}
+          sx={{ fontWeight: 700, mb: 2 }}
         >
-          Simple Pricing
+          Choose Your Subscription
         </Typography>
         
+        <Typography
+          variant="body1"
+          textAlign="center"
+          color="text.secondary"
+          sx={{ mb: 6, fontSize: '1.1rem' }}
+        >
+          Select the plan that works best for you. All plans include full access to our premium content.
+        </Typography>
         
-          {[
-            {
-              plan: 'Free',
-              price: '$0',
-              features: ['10 Media Uploads', '100MB Storage', 'Basic Support', '5MB Upload Size'],
-              popular: false,
-            },
-            {
-              plan: 'Premium',
-              price: '$19.99',
-              features: ['1,000 Media Uploads', '10GB Storage', 'Priority Support', '100MB Upload Size', 'Analytics'],
-              popular: true,
-            },
-            {
-              plan: 'Enterprise',
-              price: '$49.99',
-              features: ['Unlimited Uploads', 'Unlimited Storage', '24/7 Support', '500MB Upload Size', 'API Access'],
-              popular: false,
-            },
-          ].map((tier, index) => (
-            
-              <Card 
-                sx={{ 
-                  position: 'relative',
-                  height: '100%',
-                  border: tier.popular ? 2 : 1,
-                  borderColor: tier.popular ? 'primary.main' : 'divider',
-                }}
-              >
-                {tier.popular && (
-                  <Chip 
-                    label="Most Popular" 
-                    color="primary" 
-                    sx={{ 
-                      position: 'absolute',
-                      top: -12,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                    }}
-                  />
-                )}
-                <CardContent sx={{ textAlign: 'center', p: 3 }}>
-                  <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
-                    {tier.plan}
-                  </Typography>
-                  <Typography variant="h3" color="primary" gutterBottom sx={{ fontWeight: 700 }}>
-                    {tier.price}
-                    <Typography component="span" variant="body1" color="text.secondary">
-                      /month
+        <Box 
+          sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+            gap: 3 
+          }}
+        >
+          {plans.map((plan, index) => (
+            <Card 
+              key={index}
+              sx={{ 
+                position: 'relative',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'all 0.3s ease',
+                border: plan.popular ? 2 : 1,
+                borderColor: plan.popular ? 'secondary.main' : 'divider',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: theme.shadows[8],
+                }
+              }}
+            >
+              {plan.popular && (
+                <Chip
+                  label="Most Popular"
+                  color="secondary"
+                  sx={{
+                    position: 'absolute',
+                    top: -12,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    fontWeight: 600,
+                  }}
+                />
+              )}
+              
+              <CardContent sx={{ p: 4, flexGrow: 1 }}>
+                <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
+                  {plan.name}
+                </Typography>
+                
+                <Box mb={3}>
+                  <Box display="flex" alignItems="baseline" gap={1}>
+                    <Typography variant="h3" component="span" sx={{ fontWeight: 800 }}>
+                      {plan.price}
                     </Typography>
-                  </Typography>
-                  <Box mt={3}>
-                    {tier.features.map((feature, featureIndex) => (
-                      <Typography 
-                        key={featureIndex} 
-                        variant="body2" 
-                        sx={{ mb: 1 }}
-                      >
+                    <Typography variant="body1" color="text.secondary">
+                      {plan.period}
+                    </Typography>
+                  </Box>
+                  {plan.originalPrice && (
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ textDecoration: 'line-through' }}
+                    >
+                      Save from {plan.originalPrice}
+                    </Typography>
+                  )}
+                </Box>
+                
+                <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+                  {plan.features.map((feature, featureIndex) => (
+                    <Box 
+                      component="li" 
+                      key={featureIndex}
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        mb: 2
+                      }}
+                    >
+                      <Typography variant="body1">
                         ✓ {feature}
                       </Typography>
-                    ))}
-                  </Box>
-                </CardContent>
-                <CardActions sx={{ p: 3, pt: 0 }}>
-                  <Button 
-                    fullWidth 
-                    variant={tier.popular ? 'contained' : 'outlined'}
-                    size="large"
-                    onClick={() => navigate(user ? '/subscription' : '/register')}
-                  >
-                    {tier.plan === 'Free' ? 'Get Started' : 'Subscribe'}
-                  </Button>
-                </CardActions>
-              </Card>
-            
+                    </Box>
+                  ))}
+                </Box>
+              </CardContent>
+              
+              <CardActions sx={{ p: 4, pt: 0 }}>
+                <Button
+                  variant={plan.popular ? "contained" : "outlined"}
+                  color={plan.color as any}
+                  fullWidth
+                  size="large"
+                  onClick={() => navigate('/register')}
+                  sx={{
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                  }}
+                >
+                  Subscribe Now
+                </Button>
+              </CardActions>
+            </Card>
           ))}
+        </Box>
+      </Box>
+
+      {/* CTA Section */}
+      <Box
+        sx={{
+          textAlign: 'center',
+          py: 8,
+          background: `linear-gradient(135deg, ${theme.palette.secondary.main}20 0%, ${theme.palette.primary.main}20 100%)`,
+          borderRadius: 4,
+          mb: 4,
+        }}
+      >
+        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 700 }}>
+          Ready to Join Undercovered?
+        </Typography>
         
+        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', color: 'text.secondary' }}>
+          Start your journey with our premium content and exclusive community today.
+        </Typography>
+        
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<PlayArrow />}
+          onClick={() => navigate('/register')}
+          sx={{
+            px: 6,
+            py: 2,
+            fontSize: '1.2rem',
+            fontWeight: 600,
+            borderRadius: 3,
+            textTransform: 'none',
+          }}
+        >
+          Get Started Now
+        </Button>
       </Box>
     </Container>
   );

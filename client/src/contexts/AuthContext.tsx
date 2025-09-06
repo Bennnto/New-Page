@@ -46,6 +46,15 @@ interface RegisterData {
   username: string;
   firstName: string;
   lastName: string;
+  subscription?: {
+    plan: string;
+    cardDetails: {
+      number: string;
+      expiry: string;
+      cvc: string;
+      name: string;
+    };
+  };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -130,7 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('/api/auth/login', {
+      const response = await axios.post('/api/auth
+        /login', {
         email,
         password
       });

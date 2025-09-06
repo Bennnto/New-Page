@@ -14,6 +14,8 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import MediaGallery from './pages/Media/MediaGallery';
 import MediaUpload from './pages/Media/MediaUpload';
 import MediaDetail from './pages/Media/MediaDetail';
+import MediaLibrary from './pages/Media/MediaLibrary';
+import ChatRoom from './pages/Chat/ChatRoom';
 import Profile from './pages/Profile/Profile';
 import Subscription from './pages/Subscription/Subscription';
 import Announcements from './pages/Announcements/Announcements';
@@ -172,14 +174,36 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
-                  <Route path="/media" element={<MediaGallery />} />
-                  <Route path="/media/:id" element={<MediaDetail />} />
-                  <Route path="/announcements" element={<Announcements />} />
                   
-                  {/* Protected Routes */}
+                  {/* Protected Routes - Payment required */}
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
                       <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/media" element={
+                    <ProtectedRoute>
+                      <MediaLibrary />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/media/gallery" element={
+                    <ProtectedRoute>
+                      <MediaGallery />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/media/:id" element={
+                    <ProtectedRoute>
+                      <MediaDetail />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/chat" element={
+                    <ProtectedRoute>
+                      <ChatRoom />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/announcements" element={
+                    <ProtectedRoute>
+                      <Announcements />
                     </ProtectedRoute>
                   } />
                   <Route path="/upload" element={

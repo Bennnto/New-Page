@@ -1,7 +1,7 @@
 {
-  "name": "page-project",
+  "name": "undercovered",
   "version": "1.0.0",
-  "description": "A comprehensive page management system with payment, media upload, and user features",
+  "description": "Undercovered - Premium media library and community platform with subscription-based access",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

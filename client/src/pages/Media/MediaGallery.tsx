@@ -20,7 +20,6 @@ import {
   Favorite,
   FavoriteBorder,
   Visibility,
-  Download,
   Share,
   Search,
 } from '@mui/icons-material';
