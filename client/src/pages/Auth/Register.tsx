@@ -55,7 +55,7 @@ const Register: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const steps = ['Choose Plan', 'Payment Info', 'Account Details'];
+  const steps = ['Account Registration'];
 
   const plans = [
     {

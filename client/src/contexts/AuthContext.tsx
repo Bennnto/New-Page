@@ -142,11 +142,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('🔐 Attempting login to:', API_BASE_URL);
       console.log('📧 Email:', email);
+      console.log('🌍 NODE_ENV:', process.env.NODE_ENV);
+      console.log('🔗 axios.defaults.baseURL:', axios.defaults.baseURL);
       
-      const response = await axios.post('/api/auth/login', {
-        email,
-        password
+      // Use fetch with explicit URL to avoid axios baseURL issues
+      const loginUrl = `${API_BASE_URL}/api/auth/login`;
+      console.log('🎯 Full login URL:', loginUrl);
+      
+      const fetchResponse = await fetch(loginUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password
+        }),
       });
+
+      if (!fetchResponse.ok) {
+        throw new Error(`HTTP error! status: ${fetchResponse.status}`);
+      }
+
+      const response = { data: await fetchResponse.json() };
 
       console.log('✅ Login response:', response.data);
       

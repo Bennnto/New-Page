@@ -233,7 +233,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <ListItemButton 
-                onClick={() => handleNavigation('/register')}
+                onClick={() => handleNavigation('/contact-payment')}
                 sx={{ 
                   bgcolor: 'primary.main', 
                   color: 'primary.contrastText',
@@ -243,7 +243,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
                 }}
               >
                 <ListItemText 
-                  primary="Subscribe Now" 
+                  primary="Contact Us" 
                   primaryTypographyProps={{ 
                     textAlign: 'center', 
                     fontWeight: 600,
