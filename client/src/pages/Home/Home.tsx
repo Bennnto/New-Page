@@ -190,7 +190,7 @@ const Home: React.FC = () => {
           gutterBottom
           sx={{ fontWeight: 700, mb: 6 }}
         >
-          Why Choose Undercovered?
+          What Makes Us Different
         </Typography>
         
         <Box 

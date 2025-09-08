@@ -96,7 +96,7 @@ const MediaLibrary: React.FC = () => {
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('selectstart', handleSelectStart);
-
+w
     // Cleanup
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -109,7 +109,7 @@ const MediaLibrary: React.FC = () => {
     setLoading(true);
     try {
       const API_BASE_URL = process.env.REACT_APP_API_URL || 
-        (process.env.NODE_ENV === 'production' ? window.location.origin : 'http://localhost:5001');
+        (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001');
       
       const response = await fetch(`${API_BASE_URL}/api/media`, {
         headers: {

@@ -61,7 +61,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // API base URL - use current domain for production
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (process.env.NODE_ENV === 'production' ? window.location.origin : 'http://localhost:5001');
+  (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001');
 
 // Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
