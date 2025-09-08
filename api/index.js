@@ -76,6 +76,37 @@ let media = [
 // Storage for contact form submissions
 let contactSubmissions = [];
 
+// Storage for announcements
+let announcements = [
+  {
+    _id: 'ann_001',
+    title: 'Welcome to Undercovered!',
+    content: 'We are excited to launch our premium platform. Enjoy exclusive content, community chat, and admin-curated media.',
+    author: 'admin_001',
+    createdAt: new Date('2024-01-15'),
+    isImportant: true,
+    isPublic: true
+  },
+  {
+    _id: 'ann_002',
+    title: 'New Video Content Available',
+    content: 'Fresh premium video content has been uploaded to the media library. Check out the latest exclusive releases.',
+    author: 'admin_001',
+    createdAt: new Date('2024-01-10'),
+    isImportant: false,
+    isPublic: true
+  },
+  {
+    _id: 'ann_003',
+    title: 'Community Guidelines',
+    content: 'Please remember to follow our community guidelines in the chat room. Be respectful and enjoy the premium experience.',
+    author: 'admin_001',
+    createdAt: new Date('2024-01-05'),
+    isImportant: false,
+    isPublic: true
+  }
+];
+
 // Root API handler
 app.all('/api/*', (req, res) => {
   const path = req.path;
@@ -230,6 +261,51 @@ app.all('/api/*', (req, res) => {
     });
   }
   
+  // Announcements Routes
+  if (path === '/api/announcements' && method === 'GET') {
+    const transformedAnnouncements = announcements.map(ann => ({
+      ...ann,
+      author: ann.author === 'admin_001' ? 'Admin' : 'Unknown',
+      createdAt: ann.createdAt.toISOString()
+    })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    return res.json({
+      success: true,
+      data: {
+        announcements: transformedAnnouncements,
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: transformedAnnouncements.length,
+          itemsPerPage: 10
+        }
+      }
+    });
+  }
+  
+  if (path === '/api/announcements' && method === 'POST') {
+    const { title, content, isImportant = false } = req.body;
+    
+    const newAnnouncement = {
+      _id: 'ann_' + Date.now(),
+      title: title || 'New Announcement',
+      content: content || 'Announcement content...',
+      author: 'admin_001',
+      createdAt: new Date(),
+      isImportant,
+      isPublic: true
+    };
+    
+    announcements.unshift(newAnnouncement);
+    console.log('📢 New announcement created:', newAnnouncement._id);
+    
+    return res.status(201).json({
+      success: true,
+      message: 'Announcement created successfully',
+      data: { announcement: newAnnouncement }
+    });
+  }
+  
   // Default 404 for unmatched API routes
   return res.status(404).json({ 
     success: false,
@@ -239,7 +315,9 @@ app.all('/api/*', (req, res) => {
       'GET /api/media',
       'POST /api/media', 
       'POST /api/contact/payment',
-      'GET /api/contact/submissions'
+      'GET /api/contact/submissions',
+      'GET /api/announcements',
+      'POST /api/announcements'
     ]
   });
 });
@@ -254,7 +332,9 @@ app.get('/api', (req, res) => {
       'GET /api/media',
       'POST /api/media', 
       'POST /api/contact/payment',
-      'GET /api/contact/submissions'
+      'GET /api/contact/submissions',
+      'GET /api/announcements',
+      'POST /api/announcements'
     ]
   });
 });

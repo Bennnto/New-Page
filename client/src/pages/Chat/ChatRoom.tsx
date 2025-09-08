@@ -53,6 +53,9 @@ interface User {
 
 const ChatRoom: React.FC = () => {
   const { user } = useAuth();
+  
+  // Check if user has active subscription
+  const hasActiveSubscription = user?.subscription?.status === 'active';
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
