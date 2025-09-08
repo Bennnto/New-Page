@@ -63,6 +63,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
   (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001');
 
+console.log('🔧 Environment check:');
+console.log('📝 REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+console.log('🌍 NODE_ENV:', process.env.NODE_ENV);
+console.log('🎯 Final API_BASE_URL:', API_BASE_URL);
+
 // Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
 console.log('🌐 API_BASE_URL configured:', API_BASE_URL);
@@ -148,6 +153,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Use fetch with explicit URL to avoid axios baseURL issues
       const loginUrl = `${API_BASE_URL}/api/auth/login`;
       console.log('🎯 Full login URL:', loginUrl);
+      
+      // Additional debugging
+      if (loginUrl.includes('localhost:5000')) {
+        console.error('❌ ERROR: Still using localhost:5000!');
+        console.log('🔍 Debug info:', {
+          API_BASE_URL,
+          envApiUrl: process.env.REACT_APP_API_URL,
+          nodeEnv: process.env.NODE_ENV,
+          isProd: process.env.NODE_ENV === 'production'
+        });
+      }
       
       const fetchResponse = await fetch(loginUrl, {
         method: 'POST',
