@@ -71,21 +71,13 @@ const PaymentContact: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Create FormData to handle file upload
-      const submitData = new FormData();
-      
-      // Add form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        submitData.append(key, value);
-      });
-      
-      // Add confirmation file if present
-      if (confirmationFile) {
-        submitData.append('confirmationFile', confirmationFile);
-      }
-      
-      // Add timestamp
-      submitData.append('submittedAt', new Date().toISOString());
+      // For now, send as JSON (file upload will be added later)
+      const submitData = {
+        ...formData,
+        confirmationFileName: confirmationFile?.name || null,
+        confirmationFileSize: confirmationFile?.size || null,
+        submittedAt: new Date().toISOString()
+      };
 
       // Send to backend API - force empty string in production
       const getApiBaseUrl = () => {
@@ -100,7 +92,10 @@ const PaymentContact: React.FC = () => {
       
       const response = await fetch(`${API_BASE_URL}/api/contact/payment`, {
         method: 'POST',
-        body: submitData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -354,7 +349,7 @@ const PaymentContact: React.FC = () => {
               {/* Payment Confirmation Screenshot Upload */}
               <Box sx={{ mt: 3, mb: 2 }}>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
-                  Upload Payment Confirmation Screenshot: *
+                  Upload Payment Confirmation Screenshot (Optional):
                 </Typography>
                 <Box
                   sx={{
@@ -430,7 +425,7 @@ const PaymentContact: React.FC = () => {
                 fullWidth
                 variant="contained"
                 size="large"
-                disabled={isSubmitting || !formData.username || !formData.password || !formData.email || !formData.paymentConfirmation || !confirmationFile}
+                disabled={isSubmitting || !formData.username || !formData.password || !formData.email || !formData.paymentConfirmation}
                 sx={{ mt: 2, py: 2, fontSize: '1.1rem', fontWeight: 600 }}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Registration Form'}
