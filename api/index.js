@@ -13,33 +13,82 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// JWT Secret
+const JWT_SECRET = 'your-secret-key-here-please-change-in-production';
+
+// Helper function to check if subscription is valid
+const isSubscriptionActive = (user) => {
+  if (!user.subscription) return false;
+  if (user.subscription.status !== 'active') return false;
+  if (!user.subscription.currentPeriodEnd) return true; // No expiry set
+  
+  const now = new Date();
+  const expiryDate = new Date(user.subscription.currentPeriodEnd);
+  
+  if (now > expiryDate) {
+    // Subscription has expired, update status
+    user.subscription.status = 'expired';
+    return false;
+  }
+  
+  return true;
+};
+
 
 // In-memory data store with fixed admin credentials
 let users = [
   {
     _id: 'admin_001',
+    id: 'admin_001',
     email: 'admin@undercovered.com',
     password: 'admin123456',
     username: 'admin',
     firstName: 'Admin',
     lastName: 'User',
     role: 'admin',
-    subscription: { plan: 'enterprise', status: 'active' },
+    subscription: { 
+      plan: 'enterprise', 
+      status: 'active',
+      currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // Admin gets 1 year
+    },
     preferences: { theme: 'dark' },
     stats: { mediaUploaded: 25, totalViews: 1250, joinDate: new Date() },
     isActive: true
   },
   {
     _id: 'demo_001',
+    id: 'demo_001',
     email: 'demo@undercovered.com',
     password: 'demo123456',
     username: 'demouser',
     firstName: 'Demo',
     lastName: 'User',
     role: 'user',
-    subscription: { plan: 'premium', status: 'active' },
+    subscription: { 
+      plan: 'monthly', 
+      status: 'active',
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+    },
     preferences: { theme: 'dark' },
     stats: { mediaUploaded: 5, totalViews: 123, joinDate: new Date() },
+    isActive: true
+  },
+  {
+    _id: 'expired_001',
+    id: 'expired_001',
+    email: 'expired@undercovered.com',
+    password: 'expired123456',
+    username: 'expireduser',
+    firstName: 'Expired',
+    lastName: 'User',
+    role: 'user',
+    subscription: { 
+      plan: 'monthly', 
+      status: 'active', // Will be marked as expired when checked
+      currentPeriodEnd: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) // 5 days ago (expired)
+    },
+    preferences: { theme: 'dark' },
+    stats: { mediaUploaded: 2, totalViews: 45, joinDate: new Date() },
     isActive: true
   }
 ];
@@ -150,31 +199,66 @@ app.all('/api/*', (req, res) => {
   
   // Media Routes
   if (path === '/api/media' && method === 'GET') {
-    const transformedMedia = media.map(item => ({
-      id: item._id,
-      title: item.title,
-      description: item.description,
-      type: item.type,
-      thumbnail: `/api/placeholder/400/225`,
-      url: item.url,
-      category: item.tags.includes('exclusive') ? 'Exclusive' : 
-                item.tags.includes('photography') ? 'Photography' :
-                item.tags.includes('audio') ? 'Audio' : 'Resources',
-      uploadedBy: item.uploadedBy === 'admin_001' ? 'Admin' : 'Admin',
-      uploadedAt: item.uploadDate.toISOString().split('T')[0],
-      likes: item.views || 0,
-      isLiked: false,
-      tags: item.tags,
-      duration: item.duration ? `${Math.floor(item.duration/60)}:${(item.duration%60).toString().padStart(2, '0')}` : undefined,
-      size: item.fileSize ? `${(item.fileSize / (1024*1024)).toFixed(1)} MB` : '0 MB',
-      quality: item.fileSize > 50000000 ? '4K' : item.fileSize > 10000000 ? 'HD' : 'Standard'
-    }));
-    
-    return res.json({
-      success: true,
-      media: transformedMedia,
-      total: transformedMedia.length
-    });
+    try {
+      // Check authentication
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'Authorization token required' });
+      }
+      
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = users.find(u => u.id === decoded.userId);
+      
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      
+      // Check subscription status and expiration
+      const hasActiveSubscription = isSubscriptionActive(user);
+      if (!hasActiveSubscription) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Active subscription required to access media content',
+          subscriptionExpired: user.subscription?.status === 'expired',
+          expiryDate: user.subscription?.currentPeriodEnd
+        });
+      }
+      
+      const transformedMedia = media.map(item => ({
+        id: item._id,
+        title: item.title,
+        description: item.description,
+        type: item.type,
+        thumbnail: `/api/placeholder/400/225`,
+        url: item.url,
+        category: item.tags.includes('exclusive') ? 'Exclusive' : 
+                  item.tags.includes('photography') ? 'Photography' :
+                  item.tags.includes('audio') ? 'Audio' : 'Resources',
+        uploadedBy: item.uploadedBy === 'admin_001' ? 'Admin' : 'Admin',
+        uploadedAt: item.uploadDate.toISOString().split('T')[0],
+        likes: item.views || 0,
+        isLiked: false,
+        tags: item.tags,
+        duration: item.duration ? `${Math.floor(item.duration/60)}:${(item.duration%60).toString().padStart(2, '0')}` : undefined,
+        size: item.fileSize ? `${(item.fileSize / (1024*1024)).toFixed(1)} MB` : '0 MB',
+        quality: item.fileSize > 50000000 ? '4K' : item.fileSize > 10000000 ? 'HD' : 'Standard'
+      }));
+      
+      return res.json({
+        success: true,
+        media: transformedMedia,
+        total: transformedMedia.length,
+        subscriptionStatus: {
+          plan: user.subscription?.plan,
+          status: user.subscription?.status,
+          expiryDate: user.subscription?.currentPeriodEnd
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error fetching media:', error);
+      return res.status(500).json({ success: false, message: 'Failed to fetch media' });
+    }
   }
   
   if (path === '/api/media' && method === 'POST') {
@@ -354,6 +438,42 @@ app.all('/api/*', (req, res) => {
     }
   }
   
+  // Subscription Status Route
+  if (path === '/api/user/subscription' && method === 'GET') {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'Authorization token required' });
+      }
+      
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = users.find(u => u.id === decoded.userId);
+      
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      
+      const isActive = isSubscriptionActive(user);
+      const now = new Date();
+      const expiryDate = user.subscription?.currentPeriodEnd ? new Date(user.subscription.currentPeriodEnd) : null;
+      const daysUntilExpiry = expiryDate ? Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24)) : null;
+      
+      return res.json({ 
+        success: true, 
+        data: {
+          ...user.subscription,
+          isActive,
+          daysUntilExpiry,
+          hasExpired: expiryDate && now > expiryDate
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error fetching subscription status:', error);
+      return res.status(500).json({ success: false, message: 'Failed to fetch subscription status' });
+    }
+  }
+  
   // Update submission status (admin only)
   if (path.startsWith('/api/contact/submissions/') && method === 'PUT') {
     try {
@@ -418,6 +538,9 @@ app.all('/api/*', (req, res) => {
               plan: submission.selectedPlan, 
               status: 'active',
               startDate: new Date(),
+              currentPeriodEnd: new Date(Date.now() + (
+                submission.selectedPlan === '6month' ? 180 : 30
+              ) * 24 * 60 * 60 * 1000), // 180 days for 6-month, 30 days for monthly
               paymentMethod: submission.paymentMethod
             },
             preferences: { theme: 'dark' },
