@@ -70,14 +70,26 @@ const UserRequests: React.FC = () => {
 
   const fetchSubmissions = async () => {
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 
-        (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001');
+      const getApiBaseUrl = () => {
+        if (process.env.NODE_ENV === 'production') {
+          return '';
+        }
+        return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      };
+      const API_BASE_URL = getApiBaseUrl();
+      
+      console.log('📋 Fetching submissions from:', `${API_BASE_URL}/api/contact/submissions`);
       
       const response = await fetch(`${API_BASE_URL}/api/contact/submissions`);
       const data = await response.json();
       
+      console.log('📋 Submissions response:', data);
+      
       if (data.success) {
         setSubmissions(data.data);
+        console.log('📋 Submissions loaded:', data.data.length);
+      } else {
+        console.error('❌ Failed to fetch submissions:', data.message);
       }
     } catch (error) {
       console.error('Error fetching submissions:', error);
@@ -93,8 +105,13 @@ const UserRequests: React.FC = () => {
   const handleAction = async (submissionId: string, action: 'approve' | 'reject' | 'create_account') => {
     setActionLoading(true);
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 
-        (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001');
+      const getApiBaseUrl = () => {
+        if (process.env.NODE_ENV === 'production') {
+          return '';
+        }
+        return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      };
+      const API_BASE_URL = getApiBaseUrl();
       
       const response = await fetch(`${API_BASE_URL}/api/contact/submissions/${submissionId}`, {
         method: 'PUT',
