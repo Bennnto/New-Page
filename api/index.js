@@ -196,9 +196,17 @@ app.all('/api/*', (req, res) => {
     const userWithoutPassword = { ...user };
     delete userWithoutPassword.password;
     
-    // Create mock tokens for demo
-    const accessToken = 'demo_access_token_' + Date.now();
-    const refreshToken = 'demo_refresh_token_' + Date.now();
+    // Create real JWT tokens
+    const accessToken = jwt.sign(
+      { userId: user._id || user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    const refreshToken = jwt.sign(
+      { userId: user._id || user.id, type: 'refresh' },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
     
     return res.json({
       success: true,
@@ -517,18 +525,35 @@ app.all('/api/*', (req, res) => {
   // User Stats Route
   if (path === '/api/user/stats' && method === 'GET') {
     try {
+      console.log('📊 User stats request received');
+      
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.log('❌ No authorization header');
         return res.status(401).json({ success: false, message: 'Authorization token required' });
       }
       
       const token = authHeader.substring(7);
-      const decoded = jwt.verify(token, JWT_SECRET);
-      const user = users.find(u => u.id === decoded.userId);
+      console.log('🔑 Token extracted, length:', token.length);
+      
+      let decoded;
+      try {
+        decoded = jwt.verify(token, JWT_SECRET);
+        console.log('✅ JWT verified, userId:', decoded.userId);
+      } catch (jwtError) {
+        console.error('❌ JWT verification failed:', jwtError.message);
+        return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+      }
+      
+      const user = users.find(u => u.id === decoded.userId || u._id === decoded.userId);
       
       if (!user) {
+        console.error('❌ User not found for ID:', decoded.userId);
+        console.log('📋 Available users:', users.map(u => ({ id: u.id, _id: u._id, email: u.email })));
         return res.status(404).json({ success: false, message: 'User not found' });
       }
+      
+      console.log('✅ User found:', user.email);
       
       const userStats = {
         mediaUploaded: user.stats?.mediaUploaded || 0,
@@ -538,10 +563,12 @@ app.all('/api/*', (req, res) => {
         favoriteContent: 12, // Mock data
       };
       
+      console.log('📊 Returning user stats:', userStats);
       return res.json({ success: true, data: userStats });
     } catch (error) {
       console.error('❌ Error fetching user stats:', error);
-      return res.status(500).json({ success: false, message: 'Failed to fetch user stats' });
+      console.error('❌ Stack trace:', error.stack);
+      return res.status(500).json({ success: false, message: 'Failed to fetch user stats', error: error.message });
     }
   }
   
