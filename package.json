@@ -2,14 +2,15 @@
   "name": "undercovered",
   "version": "1.0.0",
   "description": "Undercovered - Premium media library and community platform with subscription-based access",
-  "main": "server.js",
+  "main": "server-simple.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node server-simple.js",
+    "dev": "nodemon server-simple.js",
     "dev-simple": "node server-dev.js",
     "client": "cd client && npm start",
     "server": "nodemon server.js",
     "build": "cd client && npm run build",
+    "vercel-build": "cd client && npm install --legacy-peer-deps && CI=false GENERATE_SOURCEMAP=false npm run build",
     "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "keywords": ["page", "payment", "media", "upload", "management"],

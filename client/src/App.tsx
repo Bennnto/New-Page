@@ -168,61 +168,107 @@ function App() {
         <Elements stripe={stripePromise}>
           <AuthProvider>
             <Router>
-              <Layout>
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  
-                  {/* Protected Routes - Payment required */}
-                  <Route path="/dashboard" element={
+              <Routes>
+                {/* Public Routes - No Layout/Sidebar */}
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                
+                {/* Protected Routes - With Layout/Sidebar */}
+                <Route path="/dashboard" element={
+                  <Layout>
                     <ProtectedRoute>
                       <Dashboard />
                     </ProtectedRoute>
-                  } />
-                  <Route path="/media" element={
+                  </Layout>
+                } />
+                <Route path="/media" element={
+                  <Layout>
                     <ProtectedRoute>
                       <MediaLibrary />
                     </ProtectedRoute>
-                  } />
-                  <Route path="/media/gallery" element={
+                  </Layout>
+                } />
+                <Route path="/media/gallery" element={
+                  <Layout>
                     <ProtectedRoute>
                       <MediaGallery />
                     </ProtectedRoute>
-                  } />
-                  <Route path="/media/:id" element={
+                  </Layout>
+                } />
+                <Route path="/media/:id" element={
+                  <Layout>
                     <ProtectedRoute>
                       <MediaDetail />
                     </ProtectedRoute>
-                  } />
-                  <Route path="/chat" element={
+                  </Layout>
+                } />
+                <Route path="/chat" element={
+                  <Layout>
                     <ProtectedRoute>
                       <ChatRoom />
                     </ProtectedRoute>
-                  } />
-                  <Route path="/announcements" element={
+                  </Layout>
+                } />
+                <Route path="/announcements" element={
+                  <Layout>
                     <ProtectedRoute>
                       <Announcements />
                     </ProtectedRoute>
-                  } />
-                  <Route path="/upload" element={
+                  </Layout>
+                } />
+                <Route path="/upload" element={
+                  <Layout>
                     <ProtectedRoute>
                       <MediaUpload />
                     </ProtectedRoute>
-                  } />
-                  <Route path="/profile" element={
+                  </Layout>
+                } />
+                <Route path="/profile" element={
+                  <Layout>
                     <ProtectedRoute>
                       <Profile />
                     </ProtectedRoute>
-                  } />
+                  </Layout>
+                } />
                   <Route path="/subscription" element={
-                    <ProtectedRoute>
-                      <Subscription />
-                    </ProtectedRoute>
+                    <Layout>
+                      <ProtectedRoute>
+                        <Subscription />
+                      </ProtectedRoute>
+                    </Layout>
+                  } />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    </Layout>
+                  } />
+                  <Route path="/admin/members" element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    </Layout>
+                  } />
+                  <Route path="/admin/media" element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <MediaUpload />
+                      </ProtectedRoute>
+                    </Layout>
+                  } />
+                  <Route path="/admin/announcements" element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Announcements />
+                      </ProtectedRoute>
+                    </Layout>
                   } />
                 </Routes>
-              </Layout>
             </Router>
           </AuthProvider>
         </Elements>

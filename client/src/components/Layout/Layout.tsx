@@ -94,7 +94,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            Page Project
+            UNDERCOVERED
           </Typography>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

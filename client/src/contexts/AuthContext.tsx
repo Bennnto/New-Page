@@ -61,10 +61,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // API base URL - use current domain for production
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (process.env.NODE_ENV === 'production' ? window.location.origin : 'http://localhost:5000');
+  (process.env.NODE_ENV === 'production' ? window.location.origin : 'http://localhost:5001');
 
 // Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
+console.log('🌐 API_BASE_URL configured:', API_BASE_URL);
 
 // Add token to requests
 axios.interceptors.request.use((config) => {
@@ -139,17 +140,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      console.log('🔐 Attempting login to:', API_BASE_URL);
+      console.log('📧 Email:', email);
+      
       const response = await axios.post('/api/auth/login', {
         email,
         password
       });
 
+      console.log('✅ Login response:', response.data);
+      
       const { user, accessToken, refreshToken } = response.data.data;
       
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       setUser(user);
+      
+      console.log('👤 User set:', user);
     } catch (error: any) {
+      console.error('❌ Login error:', error);
+      console.error('📍 API URL:', API_BASE_URL);
+      console.error('🔗 Full error:', error.response || error.message);
       throw new Error(error.response?.data?.message || 'Login failed');
     }
   };

@@ -108,13 +108,27 @@ const MediaUpload: React.FC = () => {
         });
       }, 200);
 
-      // Mock API call - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Real API call to upload media
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 
+        (process.env.NODE_ENV === 'production' ? window.location.origin : 'http://localhost:5001');
       
+      const response = await fetch(`${API_BASE_URL}/api/media`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: uploadData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
       setUploadProgress(100);
       clearInterval(progressInterval);
       
-      setSuccess(`Successfully uploaded ${files.length} file(s)!`);
+      setSuccess(`Successfully uploaded ${files.length} file(s)! Check the Media Library to see your uploads.`);
       setFiles([]);
       setFormData({
         title: '',
