@@ -346,7 +346,7 @@ const Home: React.FC = () => {
                   color={plan.color as any}
                   fullWidth
                   size="large"
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/contact-payment')}
                   sx={{
                     py: 2,
                     fontSize: '1.1rem',
@@ -355,7 +355,7 @@ const Home: React.FC = () => {
                     textTransform: 'none',
                   }}
                 >
-                  Subscribe Now
+                  Contact Us to Subscribe
                 </Button>
               </CardActions>
             </Card>
@@ -385,7 +385,7 @@ const Home: React.FC = () => {
           variant="contained"
           size="large"
           startIcon={<PlayArrow />}
-          onClick={() => navigate('/register')}
+          onClick={() => navigate('/contact-payment')}
           sx={{
             px: 6,
             py: 2,
@@ -395,7 +395,7 @@ const Home: React.FC = () => {
             textTransform: 'none',
           }}
         >
-          Get Started Now
+          Contact Us to Subscribe
         </Button>
       </Box>
     </Container>

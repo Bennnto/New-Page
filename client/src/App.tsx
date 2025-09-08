@@ -18,6 +18,7 @@ import MediaLibrary from './pages/Media/MediaLibrary';
 import ChatRoom from './pages/Chat/ChatRoom';
 import Profile from './pages/Profile/Profile';
 import Subscription from './pages/Subscription/Subscription';
+import PaymentContact from './pages/Contact/PaymentContact';
 import Announcements from './pages/Announcements/Announcements';
 
 // Context
@@ -169,10 +170,11 @@ function App() {
           <AuthProvider>
             <Router>
               <Routes>
-                {/* Public Routes - No Layout/Sidebar */}
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                  {/* Public Routes - No Layout/Sidebar */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/contact-payment" element={<PaymentContact />} />
                 
                 {/* Protected Routes - With Layout/Sidebar */}
                 <Route path="/dashboard" element={
