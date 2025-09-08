@@ -78,8 +78,26 @@ const Profile: React.FC = () => {
 
   const fetchUserStats = async () => {
     try {
-      const response = await axios.get('/api/user/stats');
-      setUserStats(response.data.data);
+      const getApiBaseUrl = () => {
+        if (process.env.NODE_ENV === 'production') {
+          return '';
+        }
+        return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      };
+      const API_BASE_URL = getApiBaseUrl();
+      
+      const response = await fetch(`${API_BASE_URL}/api/user/stats`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setUserStats(data.data);
+      } else {
+        throw new Error(data.message || 'Failed to fetch stats');
+      }
     } catch (error) {
       console.error('Failed to fetch user stats:', error);
       // Use mock data if API fails

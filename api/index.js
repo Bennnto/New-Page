@@ -1,7 +1,7 @@
 // Vercel serverless function entry point
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -10,14 +10,9 @@ app.use(cors({
   origin: true,
   credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Setup multer for file uploads (in memory for serverless)
-const upload = multer({ 
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
-});
 
 // In-memory data store with fixed admin credentials
 let users = [
@@ -183,30 +178,72 @@ app.all('/api/*', (req, res) => {
   }
   
   if (path === '/api/media' && method === 'POST') {
-    const timestamp = Date.now();
-    const newMedia = {
-      _id: 'media_' + timestamp,
-      title: req.body.title || `Admin Upload ${new Date().toLocaleTimeString()}`,
-      description: req.body.description || 'Uploaded by admin for premium members',
-      type: req.body.type || 'video',
-      filename: `video-${timestamp}.mp4`,
-      url: `https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`,
-      uploadedBy: 'admin_001',
-      uploadDate: new Date(),
-      views: 0,
-      isPublic: true,
-      tags: ['admin-upload', 'premium'],
-      fileSize: Math.floor(Math.random() * 100000000) + 1000000,
-      duration: Math.floor(Math.random() * 3600) + 60
-    };
-    
-    media.unshift(newMedia);
-    
-    return res.status(201).json({
-      success: true,
-      message: 'Video uploaded successfully',
-      data: { media: newMedia }
-    });
+    try {
+      console.log('📁 Processing media upload...');
+      console.log('📋 Content-Type:', req.headers['content-type']);
+      console.log('📋 Body type:', typeof req.body);
+      
+      // Handle JSON upload with base64 encoded files
+      const { files, title, description, tags, visibility } = req.body;
+      
+      if (!files || !Array.isArray(files) || files.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'No files provided'
+        });
+      }
+      
+      const uploadedMedia = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const timestamp = Date.now() + i;
+        
+        // Validate file data
+        if (!file.name || !file.data || !file.type) {
+          return res.status(400).json({
+            success: false,
+            message: `Invalid file data for file ${i + 1}`
+          });
+        }
+        
+        // Create media entry
+        const newMedia = {
+          _id: 'media_' + timestamp,
+          title: title || file.name,
+          description: description || `Uploaded by admin`,
+          type: file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'image',
+          filename: file.name,
+          url: `data:${file.type};base64,${file.data}`, // Store as data URL for now
+          originalMimeType: file.type,
+          uploadedBy: 'admin_001',
+          uploadDate: new Date(),
+          views: 0,
+          isPublic: visibility === 'public',
+          tags: tags || ['admin-upload'],
+          fileSize: Math.floor(file.size) || 1000000,
+          duration: file.type.startsWith('video/') || file.type.startsWith('audio/') ? Math.floor(Math.random() * 3600) + 60 : 0
+        };
+        
+        media.unshift(newMedia);
+        uploadedMedia.push(newMedia);
+        
+        console.log(`✅ Uploaded file: ${file.name} (${file.type})`);
+      }
+      
+      return res.status(201).json({
+        success: true,
+        message: `Successfully uploaded ${uploadedMedia.length} file(s)`,
+        data: { media: uploadedMedia }
+      });
+      
+    } catch (error) {
+      console.error('❌ Error uploading media:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Upload failed: ' + error.message
+      });
+    }
   }
   
   // Contact form submission endpoint
@@ -284,6 +321,37 @@ app.all('/api/*', (req, res) => {
         password: '[REDACTED]' // Don't send passwords in response
       }))
     });
+  }
+  
+  // User Stats Route
+  if (path === '/api/user/stats' && method === 'GET') {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'Authorization token required' });
+      }
+      
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = users.find(u => u.id === decoded.userId);
+      
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      
+      const userStats = {
+        mediaUploaded: user.stats?.mediaUploaded || 0,
+        totalViews: user.stats?.totalViews || 0,
+        joinDate: user.stats?.joinDate || user.createdAt || new Date().toISOString(),
+        subscriptionDays: user.subscription?.status === 'active' ? 30 : 0,
+        favoriteContent: 12, // Mock data
+      };
+      
+      return res.json({ success: true, data: userStats });
+    } catch (error) {
+      console.error('❌ Error fetching user stats:', error);
+      return res.status(500).json({ success: false, message: 'Failed to fetch user stats' });
+    }
   }
   
   // Update submission status (admin only)

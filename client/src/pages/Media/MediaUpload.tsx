@@ -86,16 +86,23 @@ const MediaUpload: React.FC = () => {
     setSuccess('');
 
     try {
-      const uploadData = new FormData();
-      
-      files.forEach((file, index) => {
-        uploadData.append('media', file);
-        uploadData.append(`title_${index}`, formData.title || file.name);
-        uploadData.append(`description_${index}`, formData.description);
-        uploadData.append(`tags_${index}`, JSON.stringify(formData.tags));
+      // Convert files to base64
+      const filePromises = files.map(file => {
+        return new Promise<{name: string, data: string, type: string, size: number}>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64Data = (reader.result as string).split(',')[1]; // Remove data:type;base64, prefix
+            resolve({
+              name: file.name,
+              data: base64Data,
+              type: file.type,
+              size: file.size
+            });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
       });
-      
-      uploadData.append('visibility', formData.visibility);
 
       // Simulate upload progress
       const progressInterval = setInterval(() => {
@@ -108,25 +115,36 @@ const MediaUpload: React.FC = () => {
         });
       }, 200);
 
-      // Real API call to upload media
-    const getApiBaseUrl = () => {
-      if (process.env.NODE_ENV === 'production') {
-        return '';
-      }
-      return process.env.REACT_APP_API_URL || 'http://localhost:5001';
-    };
-    const API_BASE_URL = getApiBaseUrl();
+      const filesData = await Promise.all(filePromises);
+      
+      const uploadData = {
+        files: filesData,
+        title: formData.title,
+        description: formData.description,
+        tags: formData.tags,
+        visibility: formData.visibility
+      };
+
+      const getApiBaseUrl = () => {
+        if (process.env.NODE_ENV === 'production') {
+          return '';
+        }
+        return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      };
+      const API_BASE_URL = getApiBaseUrl();
       
       const response = await fetch(`${API_BASE_URL}/api/media`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
-        body: uploadData,
+        body: JSON.stringify(uploadData),
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Upload failed');
       }
 
       const result = await response.json();
