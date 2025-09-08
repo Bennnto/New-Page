@@ -1,444 +1,25 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Card,
   CardContent,
-  TextField,
   Button,
   Typography,
   Alert,
   Link,
   Container,
-  InputAdornment,
-  IconButton,
-  Stepper,
-  Step,
-  StepLabel,
-  Divider,
-  Chip,
 } from '@mui/material';
 import { 
-  Visibility, 
-  VisibilityOff, 
   Email, 
-  Lock, 
-  Person,
-  AccountBox,
-  CreditCard,
   Star,
+  ContactMail,
+  Payment,
+  AccountCircle,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
-
-  const [activeStep, setActiveStep] = useState(0);
-  const [selectedPlan, setSelectedPlan] = useState('quarterly');
-  
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    username: '',
-    firstName: '',
-    lastName: '',
-    cardNumber: '',
-    cardExpiry: '',
-    cardCVC: '',
-    cardName: '',
-  });
-  
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const steps = ['Account Registration'];
-
-  const plans = [
-    {
-      id: 'monthly',
-      name: 'Monthly',
-      price: '$19.99',
-      period: '/month',
-      features: ['Full Media Library', 'Community Chat', 'Admin Announcements'],
-    },
-    {
-      id: 'quarterly',
-      name: 'Quarterly',
-      price: '$49.99',
-      period: '/3 months',
-      originalPrice: '$59.97',
-      features: ['Everything in Monthly', 'Priority Support', 'Early Access'],
-      popular: true,
-    },
-    {
-      id: 'annual',
-      name: 'Annual',
-      price: '$159.99',
-      period: '/year',
-      originalPrice: '$239.88',
-      features: ['Everything in Quarterly', 'VIP Status', 'Exclusive Events'],
-    },
-  ];
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleNext = () => {
-    if (activeStep === 0) {
-      setActiveStep(1);
-    } else if (activeStep === 1) {
-      // Validate payment info
-      if (!formData.cardNumber || !formData.cardExpiry || !formData.cardCVC || !formData.cardName) {
-        setError('Please fill in all payment details');
-        return;
-      }
-      setActiveStep(2);
-    }
-    setError('');
-  };
-
-  const handleBack = () => {
-    setActiveStep(activeStep - 1);
-    setError('');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setIsLoading(false);
-      return;
-    }
-
-    // Validate password length
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      await register({
-        email: formData.email,
-        password: formData.password,
-        username: formData.username,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        subscription: {
-          plan: selectedPlan,
-          cardDetails: {
-            number: formData.cardNumber,
-            expiry: formData.cardExpiry,
-            cvc: formData.cardCVC,
-            name: formData.cardName,
-          }
-        }
-      });
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const renderStepContent = () => {
-    switch (activeStep) {
-      case 0:
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-              Choose Your Subscription Plan
-            </Typography>
-            
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {plans.map((plan) => (
-                <Card 
-                  key={plan.id}
-                  sx={{ 
-                    cursor: 'pointer',
-                    border: 2,
-                    borderColor: selectedPlan === plan.id ? 'primary.main' : 'divider',
-                    position: 'relative',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                    }
-                  }}
-                  onClick={() => setSelectedPlan(plan.id)}
-                >
-                  {plan.popular && (
-                    <Chip
-                      label="Most Popular"
-                      color="secondary"
-                      size="small"
-                      sx={{
-                        position: 'absolute',
-                        top: -8,
-                        right: 16,
-                        fontWeight: 600,
-                      }}
-                    />
-                  )}
-                  
-                  <CardContent>
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                      <Box>
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                          {plan.name}
-                        </Typography>
-                        <Box display="flex" alignItems="baseline" gap={1}>
-                          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                            {plan.price}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {plan.period}
-                          </Typography>
-                        </Box>
-                        {plan.originalPrice && (
-                          <Typography 
-                            variant="body2" 
-                            color="text.secondary"
-                            sx={{ textDecoration: 'line-through' }}
-                          >
-                            Save from {plan.originalPrice}
-                          </Typography>
-                        )}
-                      </Box>
-                      
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">
-                          {plan.features.join(' • ')}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
-          </Box>
-        );
-
-      case 1:
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-              Payment Information
-            </Typography>
-
-            <Box sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Selected Plan:
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {plans.find(p => p.id === selectedPlan)?.name} - {plans.find(p => p.id === selectedPlan)?.price}
-              </Typography>
-            </Box>
-
-            <TextField
-              fullWidth
-              label="Card Number"
-              name="cardNumber"
-              value={formData.cardNumber}
-              onChange={handleChange}
-              required
-              margin="normal"
-              placeholder="1234 5678 9012 3456"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <CreditCard color="action" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-              <TextField
-                label="Expiry Date"
-                name="cardExpiry"
-                value={formData.cardExpiry}
-                onChange={handleChange}
-                required
-                placeholder="MM/YY"
-                sx={{ flex: 1 }}
-              />
-              
-              <TextField
-                label="CVC"
-                name="cardCVC"
-                value={formData.cardCVC}
-                onChange={handleChange}
-                required
-                placeholder="123"
-                sx={{ flex: 1 }}
-              />
-            </Box>
-
-            <TextField
-              fullWidth
-              label="Cardholder Name"
-              name="cardName"
-              value={formData.cardName}
-              onChange={handleChange}
-              required
-              margin="normal"
-              placeholder="John Doe"
-            />
-          </Box>
-        );
-
-      case 2:
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-              Create Your Account
-            </Typography>
-
-            <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-              <TextField
-                fullWidth
-                label="First Name"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Last Name"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
-
-            <TextField
-              fullWidth
-              label="Username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              margin="normal"
-              helperText="Username must be 3-30 characters and alphanumeric"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <AccountBox color="action" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <TextField
-              fullWidth
-              label="Email Address"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              margin="normal"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Email color="action" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <TextField
-              fullWidth
-              label="Password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              value={formData.password}
-              onChange={handleChange}
-              required
-              margin="normal"
-              helperText="Password must be at least 6 characters"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock color="action" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <TextField
-              fullWidth
-              label="Confirm Password"
-              name="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              margin="normal"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock color="action" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      edge="end"
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Box>
-        );
-
-      default:
-        return null;
-    }
-  };
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
@@ -448,95 +29,137 @@ const Register: React.FC = () => {
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
         }}
       >
-        <CardContent sx={{ p: 4 }}>
-          <Box textAlign="center" mb={4}>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              gutterBottom
-              sx={{ 
-                fontWeight: 700,
-                background: 'linear-gradient(45deg, #4f46e5 30%, #f59e0b 90%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Join Undercovered
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Get instant access to our premium media library and exclusive community
+        <CardContent sx={{ p: 6, textAlign: 'center' }}>
+          <Box mb={4}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+              <Star sx={{ fontSize: 48, color: 'primary.main', mr: 2 }} />
+              <Typography variant="h3" component="h1" sx={{ fontWeight: 700 }}>
+                Join Undercovered
+              </Typography>
+            </Box>
+            <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem', mb: 4 }}>
+              To create your premium account, please use our contact form with payment confirmation
             </Typography>
           </Box>
 
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+          <Alert severity="info" sx={{ mb: 4, textAlign: 'left' }}>
+            <Typography variant="body2">
+              <strong>New Registration Process:</strong><br />
+              1. 💳 Send payment via Interac e-Transfer or PayPal to: <strong>vissarut.rod@gmail.com</strong><br />
+              2. 📋 Fill out our contact form with payment confirmation<br />
+              3. 📷 Upload your payment screenshot<br />
+              4. ⏱️ We'll create your account within 2 hours (10AM-12AM Eastern)!
+            </Typography>
+          </Alert>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+            gap: 3, 
+            mb: 4 
+          }}>
+            {/* Pricing Plans */}
+            <Card variant="outlined">
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  📅 Monthly Plan
+                </Typography>
+                <Typography variant="h4" color="primary" sx={{ fontWeight: 700, mb: 1 }}>
+                  $10.99 CAD
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Perfect for trying out our premium content
+                </Typography>
+              </CardContent>
+            </Card>
 
-          <Box component="form" onSubmit={handleSubmit}>
-            {renderStepContent()}
+            <Card variant="outlined">
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  🎯 6-Month Plan
+                </Typography>
+                <Typography variant="h4" color="secondary" sx={{ fontWeight: 700, mb: 1 }}>
+                  $59.99 CAD
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Best value • Save $5.95
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-              <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                variant="outlined"
+          {/* Process Steps */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+              How It Works:
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+              <Box sx={{ flex: 1, textAlign: 'center' }}>
+                <Payment sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  1. Send Payment
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Interac e-Transfer or PayPal
+                </Typography>
+              </Box>
+              
+              <Box sx={{ flex: 1, textAlign: 'center' }}>
+                <ContactMail sx={{ fontSize: 48, color: 'secondary.main', mb: 1 }} />
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  2. Fill Contact Form
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  With payment confirmation
+                </Typography>
+              </Box>
+              
+              <Box sx={{ flex: 1, textAlign: 'center' }}>
+                <AccountCircle sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  3. Get Account
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Within 2 hours
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box sx={{ mb: 4 }}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/contact-payment')}
+              startIcon={<Email />}
+              sx={{
+                px: 6,
+                py: 2,
+                fontSize: '1.2rem',
+                fontWeight: 600,
+                mb: 2
+              }}
+            >
+              Start Registration Process
+            </Button>
+          </Box>
+
+          <Box textAlign="center">
+            <Typography variant="body2" color="text.secondary">
+              Already have an account?{' '}
+              <Link 
+                component={RouterLink} 
+                to="/login"
+                sx={{ 
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' }
+                }}
               >
-                Back
-              </Button>
-
-              {activeStep === steps.length - 1 ? (
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={isLoading}
-                  startIcon={<Star />}
-                  sx={{
-                    px: 4,
-                    fontWeight: 600,
-                  }}
-                >
-                  {isLoading ? 'Creating Account...' : 'Complete Subscription'}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNext}
-                  variant="contained"
-                  sx={{
-                    px: 4,
-                    fontWeight: 600,
-                  }}
-                >
-                  Next
-                </Button>
-              )}
-            </Box>
-
-            <Divider sx={{ my: 3 }} />
-
-            <Box textAlign="center">
-              <Typography variant="body2" color="text.secondary">
-                Already have an account?{' '}
-                <Link 
-                  component={RouterLink} 
-                  to="/login" 
-                  color="primary"
-                  sx={{ textDecoration: 'none', fontWeight: 600 }}
-                >
-                  Sign in here
-                </Link>
-              </Typography>
-            </Box>
+                Sign In
+              </Link>
+            </Typography>
           </Box>
         </CardContent>
       </Card>
