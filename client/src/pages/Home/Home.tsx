@@ -297,8 +297,81 @@ const Home: React.FC = () => {
               )}
               
               <CardContent sx={{ p: 4, flexGrow: 1 }}>
+                <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
+                  {plan.name}
+                </Typography>
+                
+                <Box mb={3}>
+                  <Typography variant="h3" component="span" sx={{ fontWeight: 700 }}>
+                    {plan.price}
+                  </Typography>
+                  <Typography variant="body1" component="span" color="text.secondary">
+                    {plan.period}
+                  </Typography>
+                </Box>
 
+                <Box sx={{ mb: 4 }}>
+                  {plan.features.map((feature, featureIndex) => (
+                    <Typography key={featureIndex} variant="body2" sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                      <Typography component="span" sx={{ mr: 1, color: 'success.main' }}>
+                        ✓
+                      </Typography>
+                      {feature}
+                    </Typography>
+                  ))}
+                </Box>
+              </CardContent>
+              
+              <CardActions sx={{ p: 4, pt: 0 }}>
+                <Button
+                  variant={plan.popular ? "contained" : "outlined"}
+                  color={plan.color as any}
+                  fullWidth
+                  size="large"
+                  onClick={() => navigate('/contact-payment')}
+                  sx={{
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                  }}
+                >
+                  Contact Us to Subscribe
+                </Button>
+              </CardActions>
+            </Card>
+          ))}
+        </Box>
+      </Box>
 
+      {/* Call to Action Section */}
+      <Box textAlign="center" sx={{ py: 8, backgroundColor: 'background.paper', borderRadius: 4 }}>
+        <Typography variant="h3" gutterBottom sx={{ fontWeight: 700 }}>
+          Ready to Get Started?
+        </Typography>
+        
+        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', color: 'text.secondary' }}>
+          Start your journey with our premium content and exclusive community today.
+        </Typography>
+        
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<PlayArrow />}
+          onClick={() => navigate('/contact-payment')}
+          sx={{
+            px: 6,
+            py: 2,
+            fontSize: '1.2rem',
+            fontWeight: 600,
+            borderRadius: 3,
+            textTransform: 'none',
+          }}
+        >
+          Contact Us to Subscribe
+        </Button>
+      </Box>
     </Container>
   );
 };
