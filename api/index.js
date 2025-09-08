@@ -2,6 +2,13 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const connectToDatabase = require('../database/connection');
+const seedDefaultData = require('../database/seedData');
+
+// Import database models
+const User = require('../database/models/User');
+const ContactSubmission = require('../database/models/ContactSubmission');
+const WebsiteContent = require('../database/models/WebsiteContent');
 
 const app = express();
 
@@ -218,7 +225,7 @@ let announcements = [
 ];
 
 // Root API handler
-app.all('/api/*', (req, res) => {
+app.all('/api/*', async (req, res) => {
   const path = req.path;
   const method = req.method;
   
@@ -226,33 +233,49 @@ app.all('/api/*', (req, res) => {
   console.log(`📝 Request body:`, req.body);
   
   try {
+    // Connect to MongoDB Atlas on each request (serverless pattern)
+    await connectToDatabase();
+    
+    // Seed default data if needed (only runs once)
+    if (path === '/api/auth/login' && method === 'POST') {
+      await seedDefaultData();
+    }
   
   // Auth Routes
   if (path === '/api/auth/login' && method === 'POST') {
     const { email, password } = req.body;
-    const user = users.find(u => u.email === email && u.password === password);
     
-    if (!user) {
+    console.log('🔐 Login attempt for:', email);
+    
+    // Find user in MongoDB
+    const user = await User.findOne({ email: email.toLowerCase() });
+    
+    if (!user || user.password !== password) {
+      console.log('❌ Invalid credentials for:', email);
       return res.status(401).json({ 
         success: false,
         message: 'Invalid credentials' 
       });
     }
 
-    const userWithoutPassword = { ...user };
+    console.log('✅ User found in database:', user.email);
+
+    const userWithoutPassword = user.toObject();
     delete userWithoutPassword.password;
     
     // Create real JWT tokens
     const accessToken = jwt.sign(
-      { userId: user._id || user.id, email: user.email, role: user.role },
+      { userId: user._id.toString(), email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
     const refreshToken = jwt.sign(
-      { userId: user._id || user.id, type: 'refresh' },
+      { userId: user._id.toString(), type: 'refresh' },
       JWT_SECRET,
       { expiresIn: '30d' }
     );
+    
+    console.log('🎫 JWT tokens created for:', user.email);
     
     return res.json({
       success: true,
@@ -519,9 +542,8 @@ app.all('/api/*', (req, res) => {
         paymentConfirmation
       } = formData;
 
-      // Create submission record
-      const submission = {
-        _id: 'contact_' + Date.now(),
+      // Create submission record in MongoDB
+      const submission = new ContactSubmission({
         username,
         password, // In production, this should be hashed immediately
         email,
@@ -529,12 +551,12 @@ app.all('/api/*', (req, res) => {
         selectedPlan,
         paymentMethod,
         paymentConfirmation,
-        submittedAt: new Date(),
         status: 'pending'
-      };
+      });
 
-      // Store submission
-      contactSubmissions.unshift(submission);
+      // Save to MongoDB
+      const savedSubmission = await submission.save();
+      console.log('✅ Contact submission saved to database:', savedSubmission._id);
       
       console.log('📝 New contact form submission received:', {
         id: submission._id,
@@ -559,13 +581,31 @@ app.all('/api/*', (req, res) => {
   
   // Get contact submissions (admin only)
   if (path === '/api/contact/submissions' && method === 'GET') {
-    return res.json({
-      success: true,
-      data: contactSubmissions.map(sub => ({
+    try {
+      console.log('📋 Fetching contact submissions from database...');
+      
+      const submissions = await ContactSubmission.find()
+        .sort({ submittedAt: -1 })
+        .lean();
+      
+      console.log('📋 Found submissions in database:', submissions.length);
+      
+      const sanitizedSubmissions = submissions.map(sub => ({
         ...sub,
         password: '[REDACTED]' // Don't send passwords in response
-      }))
-    });
+      }));
+      
+      return res.json({
+        success: true,
+        data: sanitizedSubmissions
+      });
+    } catch (error) {
+      console.error('❌ Error fetching submissions:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch submissions'
+      });
+    }
   }
   
   // User Stats Route

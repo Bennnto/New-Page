@@ -7,7 +7,6 @@ import {
   CardContent,
   TextField,
   Button,
-  Grid,
   Alert,
   Tabs,
   Tab,
@@ -240,31 +239,29 @@ const ContentEditor: React.FC = () => {
               Edit the text content that appears in the {contentSections[activeTab].label.toLowerCase()} section of your website.
             </Typography>
 
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
               {getCurrentSectionContent().map((item) => (
-                <Grid item xs={12} md={6} key={item.id}>
-                  <Card variant="outlined">
-                    <CardContent>
-                      <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
-                        {item.title}
-                      </Typography>
-                      <TextField
-                        fullWidth
-                        multiline
-                        rows={3}
-                        value={item.content}
-                        onChange={(e) => updateContent(item.id, e.target.value)}
-                        placeholder={`Enter ${item.title.toLowerCase()}...`}
-                        sx={{ mt: 1 }}
-                      />
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                        ID: {item.id}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
+                <Card variant="outlined" key={item.id}>
+                  <CardContent>
+                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+                      {item.title}
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      value={item.content}
+                      onChange={(e) => updateContent(item.id, e.target.value)}
+                      placeholder={`Enter ${item.title.toLowerCase()}...`}
+                      sx={{ mt: 1 }}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                      ID: {item.id}
+                    </Typography>
+                  </CardContent>
+                </Card>
               ))}
-            </Grid>
+            </Box>
 
             {getCurrentSectionContent().length === 0 && (
               <Box sx={{ textAlign: 'center', py: 4 }}>
