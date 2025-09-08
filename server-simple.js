@@ -37,6 +37,9 @@ const documentsDir = path.join(uploadsDir, 'documents');
 });
 
 // In-memory data store with fixed admin credentials
+// Storage for contact form submissions
+let contactSubmissions = [];
+
 let users = [
   {
     _id: 'admin_001',
@@ -364,6 +367,78 @@ app.post('/api/announcements', (req, res) => {
     success: true,
     message: 'Announcement created successfully',
     data: { announcement: newAnnouncement }
+  });
+});
+
+// Contact form submission endpoint
+app.post('/api/contact/payment', upload.single('confirmationFile'), (req, res) => {
+  try {
+    const {
+      username,
+      password,
+      email,
+      phone,
+      selectedPlan,
+      paymentMethod,
+      paymentConfirmation
+    } = req.body;
+
+    // Create submission record
+    const submission = {
+      _id: 'contact_' + Date.now(),
+      username,
+      password, // In production, this should be hashed immediately
+      email,
+      phone: phone || null,
+      selectedPlan,
+      paymentMethod,
+      paymentConfirmation,
+      confirmationFile: req.file ? {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+        path: req.file.path
+      } : null,
+      submittedAt: new Date(),
+      status: 'pending', // pending, approved, rejected
+      processedAt: null,
+      notes: ''
+    };
+
+    // Store submission
+    contactSubmissions.unshift(submission);
+    
+    console.log('📝 New contact form submission received:', {
+      id: submission._id,
+      email: submission.email,
+      plan: submission.selectedPlan,
+      hasFile: !!submission.confirmationFile
+    });
+
+    res.json({
+      success: true,
+      message: 'Form submitted successfully',
+      submissionId: submission._id
+    });
+
+  } catch (error) {
+    console.error('❌ Contact form submission error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error processing form submission'
+    });
+  }
+});
+
+// Get contact submissions (admin only)
+app.get('/api/contact/submissions', (req, res) => {
+  res.json({
+    success: true,
+    data: contactSubmissions.map(sub => ({
+      ...sub,
+      password: '[REDACTED]' // Don't send passwords in response
+    }))
   });
 });
 

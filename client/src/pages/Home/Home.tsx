@@ -160,7 +160,7 @@ const Home: React.FC = () => {
               textTransform: 'none',
             }}
           >
-            Start Subscription
+            Contact Us to Subscribe
           </Button>
           
           <Button
@@ -297,107 +297,8 @@ const Home: React.FC = () => {
               )}
               
               <CardContent sx={{ p: 4, flexGrow: 1 }}>
-                <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
-                  {plan.name}
-                </Typography>
-                
-                <Box mb={3}>
-                  <Box display="flex" alignItems="baseline" gap={1}>
-                    <Typography variant="h3" component="span" sx={{ fontWeight: 800 }}>
-                      {plan.price}
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      {plan.period}
-                    </Typography>
-                  </Box>
-                  {plan.originalPrice && (
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ textDecoration: 'line-through' }}
-                    >
-                      Save from {plan.originalPrice}
-                    </Typography>
-                  )}
-                </Box>
-                
-                <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
-                  {plan.features.map((feature, featureIndex) => (
-                    <Box 
-                      component="li" 
-                      key={featureIndex}
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        mb: 2
-                      }}
-                    >
-                      <Typography variant="body1">
-                        ✓ {feature}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </CardContent>
-              
-              <CardActions sx={{ p: 4, pt: 0 }}>
-                <Button
-                  variant={plan.popular ? "contained" : "outlined"}
-                  color={plan.color as any}
-                  fullWidth
-                  size="large"
-                  onClick={() => navigate('/contact-payment')}
-                  sx={{
-                    py: 2,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                  }}
-                >
-                  Contact Us to Subscribe
-                </Button>
-              </CardActions>
-            </Card>
-          ))}
-        </Box>
-      </Box>
 
-      {/* CTA Section */}
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: 8,
-          background: `linear-gradient(135deg, ${theme.palette.secondary.main}20 0%, ${theme.palette.primary.main}20 100%)`,
-          borderRadius: 4,
-          mb: 4,
-        }}
-      >
-        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 700 }}>
-          Ready to Join Undercovered?
-        </Typography>
-        
-        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', color: 'text.secondary' }}>
-          Start your journey with our premium content and exclusive community today.
-        </Typography>
-        
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={<PlayArrow />}
-          onClick={() => navigate('/contact-payment')}
-          sx={{
-            px: 6,
-            py: 2,
-            fontSize: '1.2rem',
-            fontWeight: 600,
-            borderRadius: 3,
-            textTransform: 'none',
-          }}
-        >
-          Contact Us to Subscribe
-        </Button>
-      </Box>
+
     </Container>
   );
 };
