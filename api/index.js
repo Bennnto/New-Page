@@ -75,7 +75,7 @@ let media = [
 ];
 
 // Auth Routes
-app.post('/auth/login', (req, res) => {
+app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
   const user = users.find(u => u.email === email && u.password === password);
   
@@ -86,14 +86,22 @@ app.post('/auth/login', (req, res) => {
   const userWithoutPassword = { ...user };
   delete userWithoutPassword.password;
   
+  // Create mock tokens for demo
+  const accessToken = 'demo_access_token_' + Date.now();
+  const refreshToken = 'demo_refresh_token_' + Date.now();
+  
   res.json({
     success: true,
-    data: { user: userWithoutPassword }
+    data: { 
+      user: userWithoutPassword,
+      accessToken,
+      refreshToken
+    }
   });
 });
 
 // Media Routes
-app.get('/media', (req, res) => {
+app.get('/api/media', (req, res) => {
   const transformedMedia = media.map(item => ({
     id: item._id,
     title: item.title,
@@ -121,7 +129,7 @@ app.get('/media', (req, res) => {
   });
 });
 
-app.post('/media', (req, res) => {
+app.post('/api/media', (req, res) => {
   const timestamp = Date.now();
   const newMedia = {
     _id: 'media_' + timestamp,
@@ -145,6 +153,71 @@ app.post('/media', (req, res) => {
     success: true,
     message: 'Video uploaded successfully',
     data: { media: newMedia }
+  });
+});
+
+// Storage for contact form submissions
+let contactSubmissions = [];
+
+// Contact form submission endpoint
+app.post('/api/contact/payment', (req, res) => {
+  try {
+    const {
+      username,
+      password,
+      email,
+      phone,
+      selectedPlan,
+      paymentMethod,
+      paymentConfirmation
+    } = req.body;
+
+    // Create submission record
+    const submission = {
+      _id: 'contact_' + Date.now(),
+      username,
+      password, // In production, this should be hashed immediately
+      email,
+      phone: phone || null,
+      selectedPlan,
+      paymentMethod,
+      paymentConfirmation,
+      submittedAt: new Date(),
+      status: 'pending'
+    };
+
+    // Store submission
+    contactSubmissions.unshift(submission);
+    
+    console.log('📝 New contact form submission received:', {
+      id: submission._id,
+      email: submission.email,
+      plan: submission.selectedPlan
+    });
+
+    res.json({
+      success: true,
+      message: 'Form submitted successfully',
+      submissionId: submission._id
+    });
+
+  } catch (error) {
+    console.error('❌ Contact form submission error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error processing form submission'
+    });
+  }
+});
+
+// Get contact submissions (admin only)
+app.get('/api/contact/submissions', (req, res) => {
+  res.json({
+    success: true,
+    data: contactSubmissions.map(sub => ({
+      ...sub,
+      password: '[REDACTED]' // Don't send passwords in response
+    }))
   });
 });
 
