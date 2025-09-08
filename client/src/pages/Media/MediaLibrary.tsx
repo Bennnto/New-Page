@@ -96,7 +96,7 @@ const MediaLibrary: React.FC = () => {
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('selectstart', handleSelectStart);
-w
+
     // Cleanup
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
