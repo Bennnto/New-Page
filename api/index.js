@@ -140,6 +140,52 @@ contactSubmissions.push({
   status: 'pending'
 });
 
+// Storage for website content
+let websiteContent = [
+  {
+    id: 'hero-title',
+    title: 'Hero Title',
+    content: 'Welcome to Undercovered',
+    section: 'landing'
+  },
+  {
+    id: 'hero-subtitle', 
+    title: 'Hero Subtitle',
+    content: 'Premium content for exclusive members',
+    section: 'landing'
+  },
+  {
+    id: 'hero-description',
+    title: 'Hero Description', 
+    content: 'Access premium media, join our community, and enjoy exclusive content curated just for you.',
+    section: 'landing'
+  },
+  {
+    id: 'feature-1-title',
+    title: 'Feature 1 - Premium',
+    content: 'Premium Quality Content',
+    section: 'features'
+  },
+  {
+    id: 'feature-2-title',
+    title: 'Feature 2 - Private', 
+    content: 'Private & Secure',
+    section: 'features'
+  },
+  {
+    id: 'feature-3-title',
+    title: 'Feature 3 - Secure',
+    content: 'Advanced Security',
+    section: 'features'
+  },
+  {
+    id: 'feature-4-title',
+    title: 'Feature 4 - Community',
+    content: 'Exclusive Community',
+    section: 'features'
+  }
+];
+
 // Storage for announcements
 let announcements = [
   {
@@ -729,6 +775,78 @@ app.all('/api/*', (req, res) => {
         message: 'Error processing request'
       });
     }
+  }
+  
+  // Content Management Routes
+  if (path === '/api/admin/content' && method === 'GET') {
+    try {
+      // Check if user is admin
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'Authorization required' });
+      }
+      
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = users.find(u => (u.id === decoded.userId || u._id === decoded.userId));
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Admin access required' });
+      }
+      
+      return res.json({
+        success: true,
+        content: websiteContent
+      });
+    } catch (error) {
+      console.error('❌ Error fetching content:', error);
+      return res.status(500).json({ success: false, message: 'Failed to fetch content' });
+    }
+  }
+  
+  if (path === '/api/admin/content' && method === 'POST') {
+    try {
+      // Check if user is admin
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'Authorization required' });
+      }
+      
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = users.find(u => (u.id === decoded.userId || u._id === decoded.userId));
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Admin access required' });
+      }
+      
+      const { content } = req.body;
+      if (!content || !Array.isArray(content)) {
+        return res.status(400).json({ success: false, message: 'Invalid content data' });
+      }
+      
+      // Update website content
+      websiteContent = content;
+      
+      console.log('✅ Website content updated by admin:', user.email);
+      
+      return res.json({
+        success: true,
+        message: 'Content updated successfully',
+        content: websiteContent
+      });
+    } catch (error) {
+      console.error('❌ Error updating content:', error);
+      return res.status(500).json({ success: false, message: 'Failed to update content' });
+    }
+  }
+  
+  // Public content endpoint for frontend to fetch content
+  if (path === '/api/content' && method === 'GET') {
+    return res.json({
+      success: true,
+      content: websiteContent
+    });
   }
   
   // Announcements Routes

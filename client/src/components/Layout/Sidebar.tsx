@@ -20,6 +20,7 @@ import {
   CreditCard,
   AdminPanelSettings,
   CloudUpload,
+  Edit,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -57,6 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   const adminMenuItems = [
     { text: 'Admin Panel', icon: <AdminPanelSettings />, path: '/admin' },
     { text: 'Upload Content', icon: <CloudUpload />, path: '/upload' },
+    { text: 'Content Editor', icon: <Edit />, path: '/admin/content' },
     { text: 'User Requests', icon: <Person />, path: '/admin/user-requests' },
     { text: 'Manage Members', icon: <Person />, path: '/admin/members' },
   ];

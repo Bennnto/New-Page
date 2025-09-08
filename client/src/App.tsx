@@ -21,6 +21,7 @@ import Subscription from './pages/Subscription/Subscription';
 import PaymentContact from './pages/Contact/PaymentContact';
 import Announcements from './pages/Announcements/Announcements';
 import UserRequests from './pages/Admin/UserRequests';
+import ContentEditor from './pages/Admin/ContentEditor';
 
 // Context
 import { AuthProvider } from './contexts/AuthContext';
@@ -276,6 +277,14 @@ function App() {
                   <Layout>
                     <ProtectedRoute>
                       <UserRequests />
+                    </ProtectedRoute>
+                  </Layout>
+                } />
+                
+                <Route path="/admin/content" element={
+                  <Layout>
+                    <ProtectedRoute>
+                      <ContentEditor />
                     </ProtectedRoute>
                   </Layout>
                 } />
