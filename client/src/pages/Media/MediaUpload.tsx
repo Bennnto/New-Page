@@ -72,6 +72,68 @@ const MediaUpload: React.FC = () => {
     }));
   };
 
+  // Helper function to upload large files in chunks
+  const uploadFileInChunks = async (file: File) => {
+    const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const fileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      const start = chunkIndex * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const chunk = file.slice(start, end);
+      
+      // Convert chunk to base64
+      const base64Chunk = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64Data = (reader.result as string).split(',')[1];
+          resolve(base64Data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(chunk);
+      });
+      
+      const chunkData = {
+        fileId,
+        chunkIndex,
+        totalChunks,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        chunkData: base64Chunk,
+        isLastChunk: chunkIndex === totalChunks - 1
+      };
+      
+      const getApiBaseUrl = () => {
+        if (process.env.NODE_ENV === 'production') {
+          return '';
+        }
+        return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      };
+      const API_BASE_URL = getApiBaseUrl();
+      
+      const response = await fetch(`${API_BASE_URL}/api/media/chunk`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(chunkData),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to upload chunk ${chunkIndex + 1}/${totalChunks}`);
+      }
+      
+      // Update progress
+      const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+      setUploadProgress(progress);
+    }
+    
+    return fileId;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -80,7 +142,15 @@ const MediaUpload: React.FC = () => {
       return;
     }
 
-    // Check total file size
+    // For large files, use chunked upload
+    const hasLargeFiles = files.some(file => file.size > 8 * 1024 * 1024); // Files larger than 8MB
+    
+    if (hasLargeFiles) {
+      setError('Large file detected. Please use a smaller file or contact admin for bulk upload options.');
+      return;
+    }
+
+    // Check total file size for regular upload
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
     const maxTotalSize = user?.role === 'admin' ? 10 * 1024 * 1024 : 7 * 1024 * 1024; // 10MB for admin, 7MB for users
     if (totalSize > maxTotalSize) {
@@ -309,6 +379,19 @@ const MediaUpload: React.FC = () => {
               <Typography variant="h6" gutterBottom>
                 Media Details
               </Typography>
+              
+              {/* File Size Guidelines */}
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                  📁 File Size Guidelines:
+                </Typography>
+                <Typography variant="body2" component="div">
+                  • **Admin**: Up to 8MB per file<br/>
+                  • **Premium Users**: Up to 5MB per file<br/>
+                  • **Free Users**: Up to 2MB per file<br/>
+                  • **Large Files**: Contact admin for bulk upload options
+                </Typography>
+              </Alert>
               
               <Box component="form" onSubmit={handleSubmit}>
                 <TextField

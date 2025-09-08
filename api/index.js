@@ -343,6 +343,100 @@ app.all('/api/*', (req, res) => {
     }
   }
   
+  // Chunked file upload endpoint
+  if (path === '/api/media/chunk' && method === 'POST') {
+    try {
+      console.log('🧩 Processing file chunk...');
+      
+      const { fileId, chunkIndex, totalChunks, fileName, fileType, fileSize, chunkData, isLastChunk } = req.body;
+      
+      if (!fileId || chunkIndex === undefined || !chunkData) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required chunk data'
+        });
+      }
+      
+      // Store chunk in memory (in production, use Redis or database)
+      if (!global.fileChunks) {
+        global.fileChunks = {};
+      }
+      
+      if (!global.fileChunks[fileId]) {
+        global.fileChunks[fileId] = {
+          chunks: {},
+          fileName,
+          fileType,
+          fileSize,
+          totalChunks
+        };
+      }
+      
+      // Store this chunk
+      global.fileChunks[fileId].chunks[chunkIndex] = chunkData;
+      
+      console.log(`📦 Stored chunk ${chunkIndex + 1}/${totalChunks} for file ${fileName}`);
+      
+      // If this is the last chunk, assemble the file
+      if (isLastChunk && Object.keys(global.fileChunks[fileId].chunks).length === totalChunks) {
+        console.log('🔧 Assembling complete file...');
+        
+        // Reconstruct file from chunks
+        let completeFileData = '';
+        for (let i = 0; i < totalChunks; i++) {
+          completeFileData += global.fileChunks[fileId].chunks[i];
+        }
+        
+        // Create media entry
+        const timestamp = Date.now();
+        const newMedia = {
+          _id: 'media_' + timestamp,
+          title: fileName,
+          description: `Large file uploaded via chunked transfer`,
+          type: fileType.startsWith('video/') ? 'video' : fileType.startsWith('audio/') ? 'audio' : 'image',
+          filename: fileName,
+          url: `data:${fileType};base64,${completeFileData}`,
+          originalMimeType: fileType,
+          uploadedBy: 'admin_001',
+          uploadDate: new Date(),
+          views: 0,
+          isPublic: true,
+          tags: ['chunked-upload', 'large-file'],
+          fileSize: fileSize,
+          duration: fileType.startsWith('video/') || fileType.startsWith('audio/') ? Math.floor(Math.random() * 3600) + 60 : 0
+        };
+        
+        media.unshift(newMedia);
+        
+        // Clean up chunks from memory
+        delete global.fileChunks[fileId];
+        
+        console.log(`✅ Large file assembled: ${fileName} (${(fileSize / (1024 * 1024)).toFixed(1)}MB)`);
+        
+        return res.json({
+          success: true,
+          message: 'File uploaded successfully',
+          fileComplete: true,
+          data: { media: newMedia }
+        });
+      }
+      
+      return res.json({
+        success: true,
+        message: `Chunk ${chunkIndex + 1}/${totalChunks} uploaded`,
+        fileComplete: false,
+        progress: Math.round(((chunkIndex + 1) / totalChunks) * 100)
+      });
+      
+    } catch (error) {
+      console.error('❌ Error processing chunk:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Chunk upload failed: ' + error.message
+      });
+    }
+  }
+  
   // Contact form submission endpoint
   if (path === '/api/contact/payment' && method === 'POST') {
     try {
