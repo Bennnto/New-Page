@@ -57,6 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   const adminMenuItems = [
     { text: 'Admin Panel', icon: <AdminPanelSettings />, path: '/admin' },
     { text: 'Upload Content', icon: <CloudUpload />, path: '/upload' },
+    { text: 'User Requests', icon: <Person />, path: '/admin/user-requests' },
     { text: 'Manage Members', icon: <Person />, path: '/admin/members' },
   ];
 

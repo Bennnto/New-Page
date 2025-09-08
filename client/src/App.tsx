@@ -20,6 +20,7 @@ import Profile from './pages/Profile/Profile';
 import Subscription from './pages/Subscription/Subscription';
 import PaymentContact from './pages/Contact/PaymentContact';
 import Announcements from './pages/Announcements/Announcements';
+import UserRequests from './pages/Admin/UserRequests';
 
 // Context
 import { AuthProvider } from './contexts/AuthContext';
@@ -263,13 +264,21 @@ function App() {
                       </ProtectedRoute>
                     </Layout>
                   } />
-                  <Route path="/admin/announcements" element={
-                    <Layout>
-                      <ProtectedRoute>
-                        <Announcements />
-                      </ProtectedRoute>
-                    </Layout>
-                  } />
+                <Route path="/admin/announcements" element={
+                  <Layout>
+                    <ProtectedRoute>
+                      <Announcements />
+                    </ProtectedRoute>
+                  </Layout>
+                } />
+                
+                <Route path="/admin/user-requests" element={
+                  <Layout>
+                    <ProtectedRoute>
+                      <UserRequests />
+                    </ProtectedRoute>
+                  </Layout>
+                } />
                 </Routes>
             </Router>
           </AuthProvider>

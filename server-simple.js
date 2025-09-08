@@ -442,6 +442,129 @@ app.get('/api/contact/submissions', (req, res) => {
   });
 });
 
+// Update submission status and create user account
+app.put('/api/contact/submissions/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action, notes } = req.body;
+    
+    const submissionIndex = contactSubmissions.findIndex(sub => sub._id === id);
+    if (submissionIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Submission not found'
+      });
+    }
+
+    const submission = contactSubmissions[submissionIndex];
+    
+    switch (action) {
+      case 'approve':
+        submission.status = 'approved';
+        submission.processedAt = new Date();
+        submission.notes = notes || '';
+        console.log('✅ Submission approved:', submission.email);
+        break;
+        
+      case 'reject':
+        submission.status = 'rejected';
+        submission.processedAt = new Date();
+        submission.notes = notes || '';
+        console.log('❌ Submission rejected:', submission.email);
+        break;
+        
+      case 'create_account':
+        if (submission.status !== 'approved') {
+          return res.status(400).json({
+            success: false,
+            message: 'Submission must be approved before creating account'
+          });
+        }
+        
+        // Check if user already exists
+        const existingUser = users.find(u => u.email === submission.email || u.username === submission.username);
+        if (existingUser) {
+          return res.status(400).json({
+            success: false,
+            message: 'User with this email or username already exists'
+          });
+        }
+        
+        // Create new user account
+        const newUser = {
+          _id: 'user_' + Date.now(),
+          username: submission.username,
+          email: submission.email,
+          password: submission.password, // In production, hash this!
+          firstName: submission.username, // Default to username
+          lastName: '',
+          phone: submission.phone || '',
+          role: 'user',
+          subscription: { 
+            plan: submission.selectedPlan, 
+            status: 'active',
+            startDate: new Date(),
+            paymentMethod: submission.paymentMethod
+          },
+          preferences: { theme: 'dark' },
+          stats: { 
+            mediaUploaded: 0, 
+            totalViews: 0, 
+            joinDate: new Date() 
+          },
+          isActive: true,
+          createdFromSubmission: submission._id
+        };
+        
+        // Add user to users array
+        users.push(newUser);
+        
+        // Update submission status
+        submission.status = 'account_created';
+        submission.processedAt = new Date();
+        submission.notes = notes || 'Account created successfully';
+        
+        console.log('👤 New user account created:', {
+          id: newUser._id,
+          username: newUser.username,
+          email: newUser.email,
+          plan: newUser.subscription.plan
+        });
+        
+        // In a real app, you would:
+        // 1. Hash the password
+        // 2. Send welcome email with login instructions
+        // 3. Store in actual database
+        
+        break;
+        
+      default:
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid action'
+        });
+    }
+    
+    res.json({
+      success: true,
+      message: `Submission ${action.replace('_', ' ')} successfully`,
+      data: {
+        submission: {
+          ...submission,
+          password: '[REDACTED]'
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error updating submission:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error processing request'
+    });
+  }
+});
+
 // User Routes
 app.get('/api/user/profile', (req, res) => {
   const user = users.find(u => u.role === 'admin');
