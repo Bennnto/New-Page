@@ -10,8 +10,8 @@ app.use(cors({
   origin: true,
   credentials: true
 }));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // JWT Secret
 const JWT_SECRET = 'your-secret-key-here-please-change-in-production';
@@ -126,6 +126,19 @@ let media = [
 
 // Storage for contact form submissions
 let contactSubmissions = [];
+
+// Add some test submissions so admin can see data
+contactSubmissions.push({
+  _id: 'test_001',
+  username: 'testuser',
+  email: 'test@example.com',
+  phone: '+1234567890',
+  selectedPlan: 'monthly',
+  paymentMethod: 'interac',
+  paymentConfirmation: 'Sent $10.99 via Interac e-Transfer to vissarut.rod@gmail.com',
+  submittedAt: new Date().toISOString(),
+  status: 'pending'
+});
 
 // Storage for announcements
 let announcements = [

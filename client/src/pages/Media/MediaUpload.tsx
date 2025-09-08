@@ -46,10 +46,9 @@ const MediaUpload: React.FC = () => {
       'video/*': ['.mp4', '.webm', '.mov'],
       'application/pdf': ['.pdf'],
     },
-    maxSize: user?.subscription.plan === 'enterprise' ? 500 * 1024 * 1024 : // 500MB
-             user?.subscription.plan === 'premium' ? 100 * 1024 * 1024 : // 100MB
-             user?.subscription.plan === 'basic' ? 25 * 1024 * 1024 : // 25MB
-             5 * 1024 * 1024, // 5MB for free
+    maxSize: user?.role === 'admin' ? 8 * 1024 * 1024 : // 8MB for admin
+             user?.subscription.plan === 'monthly' || user?.subscription.plan === '6month' ? 5 * 1024 * 1024 : // 5MB for paid
+             2 * 1024 * 1024, // 2MB for free users
   });
 
   const removeFile = (index: number) => {
@@ -78,6 +77,14 @@ const MediaUpload: React.FC = () => {
     
     if (files.length === 0) {
       setError('Please select at least one file to upload');
+      return;
+    }
+
+    // Check total file size
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    const maxTotalSize = user?.role === 'admin' ? 10 * 1024 * 1024 : 7 * 1024 * 1024; // 10MB for admin, 7MB for users
+    if (totalSize > maxTotalSize) {
+      setError(`Total file size too large (${(totalSize / (1024 * 1024)).toFixed(1)}MB). Maximum allowed: ${(maxTotalSize / (1024 * 1024)).toFixed(1)}MB`);
       return;
     }
 
@@ -143,8 +150,19 @@ const MediaUpload: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Upload failed');
+        let errorMessage = 'Upload failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (parseError) {
+          // If we can't parse JSON, it's likely a server error (413, 500, etc.)
+          if (response.status === 413) {
+            errorMessage = 'File too large. Please choose a smaller file (max 8MB for admin, 5MB for premium users).';
+          } else {
+            errorMessage = `Upload failed with status ${response.status}. Please try a smaller file.`;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
