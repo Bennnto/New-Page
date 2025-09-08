@@ -109,8 +109,13 @@ const MediaUpload: React.FC = () => {
       }, 200);
 
       // Real API call to upload media
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 
-        (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001');
+    const getApiBaseUrl = () => {
+      if (process.env.NODE_ENV === 'production') {
+        return '';
+      }
+      return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+    };
+    const API_BASE_URL = getApiBaseUrl();
       
       const response = await fetch(`${API_BASE_URL}/api/media`, {
         method: 'POST',

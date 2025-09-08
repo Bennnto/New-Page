@@ -87,9 +87,14 @@ const PaymentContact: React.FC = () => {
       // Add timestamp
       submitData.append('submittedAt', new Date().toISOString());
 
-      // Send to backend API
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 
-        (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001');
+      // Send to backend API - force empty string in production
+      const getApiBaseUrl = () => {
+        if (process.env.NODE_ENV === 'production') {
+          return '';
+        }
+        return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      };
+      const API_BASE_URL = getApiBaseUrl();
       
       console.log('📋 Submitting to:', `${API_BASE_URL}/api/contact/payment`);
       

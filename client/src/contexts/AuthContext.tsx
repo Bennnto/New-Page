@@ -60,8 +60,18 @@ interface RegisterData {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // API base URL - use current domain for production
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001');
+// Force empty string in production to prevent localhost issues
+const getApiBaseUrl = () => {
+  // If we're in production, always use empty string (same domain)
+  if (process.env.NODE_ENV === 'production') {
+    return '';
+  }
+  
+  // In development, use localhost:5001
+  return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 console.log('🔧 Environment check:');
 console.log('📝 REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
