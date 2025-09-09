@@ -658,32 +658,62 @@ app.all('/api/*', async (req, res) => {
         paymentConfirmation
       } = formData;
 
-      // Create submission record in MongoDB
-      const submission = new ContactSubmission({
-        username,
-        password, // In production, this should be hashed immediately
-        email,
-        phone: phone || null,
-        selectedPlan,
-        paymentMethod,
-        paymentConfirmation,
-        status: 'pending'
-      });
-
-      // Save to MongoDB
-      const savedSubmission = await submission.save();
-      console.log('✅ Contact submission saved to database:', savedSubmission._id);
+      // Create submission record
+      let savedSubmission = null;
+      
+      if (mongoConnected && ContactSubmission) {
+        try {
+          // Save to MongoDB
+          const submission = new ContactSubmission({
+            username,
+            password, // In production, this should be hashed immediately
+            email,
+            phone: phone || null,
+            selectedPlan,
+            paymentMethod,
+            paymentConfirmation,
+            status: 'pending'
+          });
+          
+          savedSubmission = await submission.save();
+          console.log('✅ Contact submission saved to MongoDB:', savedSubmission._id);
+        } catch (dbError) {
+          console.log('❌ MongoDB save failed:', dbError.message);
+        }
+      }
+      
+      // Fallback to in-memory storage if MongoDB not available
+      if (!savedSubmission) {
+        console.log('🔄 Using fallback in-memory storage');
+        const fallbackSubmission = {
+          _id: 'contact_' + Date.now(),
+          username,
+          password,
+          email,
+          phone: phone || null,
+          selectedPlan,
+          paymentMethod,
+          paymentConfirmation,
+          status: 'pending',
+          submittedAt: new Date().toISOString()
+        };
+        
+        // Add to in-memory storage
+        contactSubmissions.push(fallbackSubmission);
+        savedSubmission = fallbackSubmission;
+        console.log('✅ Contact submission saved to memory:', savedSubmission._id);
+      }
       
       console.log('📝 New contact form submission received:', {
-        id: submission._id,
-        email: submission.email,
-        plan: submission.selectedPlan
+        id: savedSubmission._id,
+        email: savedSubmission.email,
+        plan: savedSubmission.selectedPlan
       });
 
       return res.json({
         success: true,
         message: 'Form submitted successfully',
-        submissionId: submission._id
+        submissionId: savedSubmission._id
       });
 
     } catch (error) {
