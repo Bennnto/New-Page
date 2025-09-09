@@ -2,13 +2,24 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const connectToDatabase = require('../database/connection');
-const seedDefaultData = require('../database/seedData');
 
-// Import database models
-const User = require('../database/models/User');
-const ContactSubmission = require('../database/models/ContactSubmission');
-const WebsiteContent = require('../database/models/WebsiteContent');
+// Try to import MongoDB modules (fallback if not available)
+let connectToDatabase, seedDefaultData, User, ContactSubmission, WebsiteContent;
+try {
+  connectToDatabase = require('../database/connection');
+  seedDefaultData = require('../database/seedData');
+  User = require('../database/models/User');
+  ContactSubmission = require('../database/models/ContactSubmission');
+  WebsiteContent = require('../database/models/WebsiteContent');
+  console.log('✅ MongoDB modules loaded successfully');
+} catch (error) {
+  console.log('⚠️ MongoDB modules not available, using fallback mode:', error.message);
+  connectToDatabase = null;
+  seedDefaultData = null;
+  User = null;
+  ContactSubmission = null;
+  WebsiteContent = null;
+}
 
 const app = express();
 
@@ -235,17 +246,23 @@ app.all('/api/*', async (req, res) => {
   try {
     // Try to connect to MongoDB Atlas (fallback to in-memory if not available)
     let mongoConnected = false;
-    try {
-      await connectToDatabase();
-      mongoConnected = true;
-      console.log('✅ MongoDB connection successful');
-      
-      // Seed default data if needed (only runs once)
-      if (path === '/api/auth/login' && method === 'POST') {
-        await seedDefaultData();
+    
+    if (connectToDatabase && process.env.MONGODB_URI) {
+      try {
+        await connectToDatabase();
+        mongoConnected = true;
+        console.log('✅ MongoDB connection successful');
+        
+        // Seed default data if needed (only runs once)
+        if (path === '/api/auth/login' && method === 'POST' && seedDefaultData) {
+          await seedDefaultData();
+        }
+      } catch (mongoError) {
+        console.log('⚠️ MongoDB connection failed:', mongoError.message);
+        mongoConnected = false;
       }
-    } catch (mongoError) {
-      console.log('⚠️ MongoDB connection failed, using fallback data:', mongoError.message);
+    } else {
+      console.log('ℹ️ MongoDB not configured, using fallback mode');
       mongoConnected = false;
     }
   
@@ -257,7 +274,7 @@ app.all('/api/*', async (req, res) => {
     
     let user = null;
     
-    if (mongoConnected) {
+    if (mongoConnected && User) {
       // Try MongoDB first
       try {
         user = await User.findOne({ email: email.toLowerCase() });
