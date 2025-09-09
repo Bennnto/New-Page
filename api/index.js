@@ -728,13 +728,27 @@ app.all('/api/*', async (req, res) => {
   // Get contact submissions (admin only)
   if (path === '/api/contact/submissions' && method === 'GET') {
     try {
-      console.log('📋 Fetching contact submissions from database...');
+      console.log('📋 Fetching contact submissions...');
       
-      const submissions = await ContactSubmission.find()
-        .sort({ submittedAt: -1 })
-        .lean();
+      let submissions = [];
       
-      console.log('📋 Found submissions in database:', submissions.length);
+      if (mongoConnected && ContactSubmission) {
+        try {
+          // Fetch from MongoDB
+          submissions = await ContactSubmission.find()
+            .sort({ submittedAt: -1 })
+            .lean();
+          console.log('📋 Found submissions in MongoDB:', submissions.length);
+        } catch (dbError) {
+          console.log('❌ MongoDB fetch failed:', dbError.message);
+        }
+      }
+      
+      // Fallback to in-memory submissions if MongoDB not available
+      if (!submissions || submissions.length === 0) {
+        console.log('🔄 Using fallback in-memory submissions');
+        submissions = contactSubmissions;
+      }
       
       const sanitizedSubmissions = submissions.map(sub => ({
         ...sub,
@@ -980,9 +994,28 @@ app.all('/api/*', async (req, res) => {
         return res.status(403).json({ success: false, message: 'Admin access required' });
       }
       
+      // Fetch website content with MongoDB fallback
+      let content = [];
+      
+      if (mongoConnected && WebsiteContent) {
+        try {
+          // Fetch from MongoDB
+          content = await WebsiteContent.find({ isActive: true }).sort({ section: 1, order: 1 });
+          console.log(`📊 MongoDB admin content fetched: ${content.length} items`);
+        } catch (dbError) {
+          console.log('❌ MongoDB admin content fetch failed:', dbError.message);
+        }
+      }
+      
+      // Fallback to in-memory content if MongoDB not available or no content found
+      if (!content || content.length === 0) {
+        console.log('🔄 Using fallback admin content data');
+        content = websiteContent;
+      }
+      
       return res.json({
         success: true,
-        content: websiteContent
+        content: content
       });
     } catch (error) {
       console.error('❌ Error fetching content:', error);
