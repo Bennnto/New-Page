@@ -221,6 +221,42 @@ const defaultWebsiteContent = [
 // In-memory fallback storage
 let websiteContent = [...defaultWebsiteContent];
 
+// Helper function for authentication
+function authenticateUser(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  
+  try {
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = users.find(u => (u.id === decoded.userId || u._id === decoded.userId));
+    return user || null;
+  } catch (error) {
+    console.log('🔐 Authentication failed:', error.message);
+    return null;
+  }
+}
+
+// Helper function for admin authentication
+function authenticateAdmin(req) {
+  const user = authenticateUser(req);
+  return user && user.role === 'admin' ? user : null;
+}
+
+// Helper function for standardized error responses
+function sendError(res, status, message, details = null) {
+  const response = { success: false, message };
+  if (details) response.details = details;
+  return res.status(status).json(response);
+}
+
+// Helper function for standardized success responses
+function sendSuccess(res, data, message = 'Success') {
+  return res.json({ success: true, message, data });
+}
+
 // Function to seed default website content to MongoDB
 async function seedWebsiteContent() {
   try {
@@ -1186,6 +1222,68 @@ app.all('/api/*', async (req, res) => {
       data: { announcement: newAnnouncement }
     });
   }
+
+  // Contact submission update endpoint (admin)
+  if (path.startsWith('/api/contact/submissions/') && method === 'PUT') {
+    try {
+      const admin = authenticateAdmin(req);
+      if (!admin) {
+        return sendError(res, 403, 'Admin access required');
+      }
+      
+      const submissionId = path.split('/').pop();
+      const { status, notes } = req.body;
+      
+      // Find and update submission
+      const submissionIndex = contactSubmissions.findIndex(sub => sub._id === submissionId);
+      if (submissionIndex === -1) {
+        return sendError(res, 404, 'Submission not found');
+      }
+      
+      contactSubmissions[submissionIndex] = {
+        ...contactSubmissions[submissionIndex],
+        status: status || contactSubmissions[submissionIndex].status,
+        notes: notes || contactSubmissions[submissionIndex].notes,
+        updatedAt: new Date().toISOString(),
+        updatedBy: admin._id || admin.id
+      };
+      
+      console.log('✅ Submission updated by admin:', admin.email);
+      return sendSuccess(res, contactSubmissions[submissionIndex], 'Submission updated successfully');
+      
+    } catch (error) {
+      console.error('❌ Error updating submission:', error);
+      return sendError(res, 500, 'Failed to update submission');
+    }
+  }
+
+  // User profile endpoint
+  if (path === '/api/user/profile' && method === 'GET') {
+    try {
+      const user = authenticateUser(req);
+      if (!user) {
+        return sendError(res, 401, 'Authentication required');
+      }
+      
+      const profile = {
+        id: user._id || user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        subscription: user.subscription,
+        joinDate: user.createdAt || new Date().toISOString(),
+        isActive: user.isActive
+      };
+      
+      return sendSuccess(res, profile, 'Profile retrieved successfully');
+      
+    } catch (error) {
+      console.error('❌ Error fetching profile:', error);
+      return sendError(res, 500, 'Failed to fetch profile');
+    }
+  }
   
   // Default 404 for unmatched API routes
   return res.status(404).json({ 
@@ -1195,9 +1293,16 @@ app.all('/api/*', async (req, res) => {
       'POST /api/auth/login',
       'GET /api/media',
       'POST /api/media', 
+      'POST /api/media/chunk',
       'POST /api/contact/payment',
       'GET /api/contact/submissions',
       'PUT /api/contact/submissions/:id',
+      'GET /api/user/stats',
+      'GET /api/user/subscription',
+      'GET /api/user/profile',
+      'GET /api/admin/content',
+      'POST /api/admin/content',
+      'GET /api/content',
       'GET /api/announcements',
       'POST /api/announcements'
     ]
