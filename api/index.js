@@ -473,6 +473,23 @@ app.all('/api/*', async (req, res) => {
       console.log('📋 Content-Type:', req.headers['content-type']);
       console.log('📋 Body type:', typeof req.body);
       
+      // Check authentication (optional - for demo purposes, allow without auth)
+      let user = null;
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const token = authHeader.substring(7);
+          const decoded = jwt.verify(token, JWT_SECRET);
+          user = users.find(u => (u.id === decoded.userId || u._id === decoded.userId));
+          console.log('📝 Authenticated user:', user?.email || 'unknown');
+        } catch (authError) {
+          console.log('⚠️ Authentication failed:', authError.message);
+          // Continue without auth for demo purposes
+        }
+      } else {
+        console.log('ℹ️ No authentication provided');
+      }
+      
       // Handle JSON upload with base64 encoded files
       const { files, title, description, tags, visibility } = req.body;
       
@@ -501,16 +518,17 @@ app.all('/api/*', async (req, res) => {
         const newMedia = {
           _id: 'media_' + timestamp,
           title: title || file.name,
-          description: description || `Uploaded by admin`,
+          description: description || `Uploaded by ${user?.username || 'user'}`,
           type: file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'image',
           filename: file.name,
           url: `data:${file.type};base64,${file.data}`, // Store as data URL for now
           originalMimeType: file.type,
-          uploadedBy: 'admin_001',
+          uploadedBy: user?._id || user?.id || 'anonymous',
+          owner: user?._id || user?.id || 'anonymous',
           uploadDate: new Date(),
           views: 0,
           isPublic: visibility === 'public',
-          tags: tags || ['admin-upload'],
+          tags: tags || [user?.username ? `${user.username}-upload` : 'user-upload'],
           fileSize: Math.floor(file.size) || 1000000,
           duration: file.type.startsWith('video/') || file.type.startsWith('audio/') ? Math.floor(Math.random() * 3600) + 60 : 0
         };
