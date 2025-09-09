@@ -158,51 +158,90 @@ contactSubmissions.push({
   status: 'pending'
 });
 
-// Storage for website content
-let websiteContent = [
+// Default website content (fallback when MongoDB not available)
+const defaultWebsiteContent = [
   {
-    id: 'hero-title',
+    contentId: 'hero-title',
     title: 'Hero Title',
     content: 'Welcome to Undercovered',
-    section: 'landing'
+    section: 'landing',
+    type: 'text',
+    isActive: true
   },
   {
-    id: 'hero-subtitle', 
+    contentId: 'hero-subtitle', 
     title: 'Hero Subtitle',
     content: 'Premium content for exclusive members',
-    section: 'landing'
+    section: 'landing',
+    type: 'text',
+    isActive: true
   },
   {
-    id: 'hero-description',
+    contentId: 'hero-description',
     title: 'Hero Description', 
     content: 'Access premium media, join our community, and enjoy exclusive content curated just for you.',
-    section: 'landing'
+    section: 'landing',
+    type: 'text',
+    isActive: true
   },
   {
-    id: 'feature-1-title',
+    contentId: 'feature-1-title',
     title: 'Feature 1 - Premium',
     content: 'Premium Quality Content',
-    section: 'features'
+    section: 'features',
+    type: 'text',
+    isActive: true
   },
   {
-    id: 'feature-2-title',
+    contentId: 'feature-2-title',
     title: 'Feature 2 - Private', 
     content: 'Private & Secure',
-    section: 'features'
+    section: 'features',
+    type: 'text',
+    isActive: true
   },
   {
-    id: 'feature-3-title',
+    contentId: 'feature-3-title',
     title: 'Feature 3 - Secure',
     content: 'Advanced Security',
-    section: 'features'
+    section: 'features',
+    type: 'text',
+    isActive: true
   },
   {
-    id: 'feature-4-title',
+    contentId: 'feature-4-title',
     title: 'Feature 4 - Community',
     content: 'Exclusive Community',
-    section: 'features'
+    section: 'features',
+    type: 'text',
+    isActive: true
   }
 ];
+
+// In-memory fallback storage
+let websiteContent = [...defaultWebsiteContent];
+
+// Function to seed default website content to MongoDB
+async function seedWebsiteContent() {
+  try {
+    if (!WebsiteContent) {
+      console.log('ℹ️ WebsiteContent model not available, skipping seed');
+      return;
+    }
+
+    const existingContent = await WebsiteContent.find({});
+    if (existingContent.length > 0) {
+      console.log(`ℹ️ Website content already seeded (${existingContent.length} items)`);
+      return;
+    }
+
+    console.log('🌱 Seeding default website content to MongoDB...');
+    await WebsiteContent.insertMany(defaultWebsiteContent);
+    console.log(`✅ Seeded ${defaultWebsiteContent.length} website content items`);
+  } catch (error) {
+    console.log('⚠️ Failed to seed website content:', error.message);
+  }
+}
 
 // Storage for announcements
 let announcements = [
@@ -256,6 +295,7 @@ app.all('/api/*', async (req, res) => {
         // Seed default data if needed (only runs once)
         if (path === '/api/auth/login' && method === 'POST' && seedDefaultData) {
           await seedDefaultData();
+          await seedWebsiteContent();
         }
       } catch (mongoError) {
         console.log('⚠️ MongoDB connection failed:', mongoError.message);
@@ -942,6 +982,37 @@ app.all('/api/*', async (req, res) => {
       }
       
       // Update website content
+      let updatedContent = content;
+      
+      if (mongoConnected && WebsiteContent) {
+        try {
+          // Update in MongoDB
+          for (const item of content) {
+            if (item.contentId) {
+              await WebsiteContent.findOneAndUpdate(
+                { contentId: item.contentId },
+                { 
+                  title: item.title,
+                  content: item.content,
+                  section: item.section,
+                  type: item.type || 'text',
+                  isActive: item.isActive !== false,
+                  updatedAt: new Date()
+                },
+                { upsert: true, new: true }
+              );
+            }
+          }
+          console.log(`📊 MongoDB content updated: ${content.length} items`);
+          
+          // Fetch updated content from MongoDB
+          updatedContent = await WebsiteContent.find({ isActive: true }).sort({ section: 1, order: 1 });
+        } catch (dbError) {
+          console.log('❌ MongoDB content update failed:', dbError.message);
+        }
+      }
+      
+      // Also update in-memory fallback
       websiteContent = content;
       
       console.log('✅ Website content updated by admin:', user.email);
@@ -949,7 +1020,7 @@ app.all('/api/*', async (req, res) => {
       return res.json({
         success: true,
         message: 'Content updated successfully',
-        content: websiteContent
+        content: updatedContent
       });
     } catch (error) {
       console.error('❌ Error updating content:', error);
@@ -959,10 +1030,35 @@ app.all('/api/*', async (req, res) => {
   
   // Public content endpoint for frontend to fetch content
   if (path === '/api/content' && method === 'GET') {
-    return res.json({
-      success: true,
-      content: websiteContent
-    });
+    try {
+      console.log('📄 Fetching website content');
+      
+      let content = [];
+      
+      if (mongoConnected && WebsiteContent) {
+        try {
+          // Fetch from MongoDB
+          content = await WebsiteContent.find({ isActive: true }).sort({ section: 1, order: 1 });
+          console.log(`📊 MongoDB content fetched: ${content.length} items`);
+        } catch (dbError) {
+          console.log('❌ MongoDB content fetch failed:', dbError.message);
+        }
+      }
+      
+      // Fallback to in-memory content if MongoDB not available or no content found
+      if (!content || content.length === 0) {
+        console.log('🔄 Using fallback content data');
+        content = websiteContent;
+      }
+      
+      return res.json({
+        success: true,
+        content: content
+      });
+    } catch (error) {
+      console.error('❌ Error fetching content:', error);
+      return res.status(500).json({ success: false, message: 'Failed to fetch content' });
+    }
   }
   
   // Announcements Routes
