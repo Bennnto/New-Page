@@ -78,7 +78,7 @@ console.log('📝 REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
 console.log('🌍 NODE_ENV:', process.env.NODE_ENV);
 console.log('🎯 Final API_BASE_URL:', API_BASE_URL);
 
-// Configure axios defaults
+sur// Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
 console.log('🌐 API_BASE_URL configured:', API_BASE_URL);
 
@@ -196,11 +196,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const { user, accessToken, refreshToken } = response.data.data;
       
+      localStorage.setItem('token', accessToken);
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       setUser(user);
       
       console.log('👤 User set:', user);
+      console.log('🔑 Token stored:', accessToken.substring(0, 20) + '...');
     } catch (error: any) {
       console.error('❌ Login error:', error);
       console.error('📍 API URL:', API_BASE_URL);
@@ -229,9 +231,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      localStorage.removeItem('token');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       setUser(null);
+      console.log('🔐 Logged out, tokens cleared');
     }
   };
 
@@ -252,6 +256,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('User refresh failed:', error);
     }
   };
+
+  // Initialize user from localStorage on app start
+  useEffect(() => {
+    const initializeUser = async () => {
+      const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
+      if (token) {
+        console.log('🔄 Found token, attempting to refresh user...');
+        try {
+          // Try to get user profile from API
+          const getApiBaseUrl = () => {
+            if (process.env.NODE_ENV === 'production') {
+              return '';
+            }
+            return process.env.REACT_APP_API_URL || 'http://localhost:5001';
+          };
+          const API_BASE_URL = getApiBaseUrl();
+          
+          const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              setUser(data.data);
+              console.log('✅ User initialized from token:', data.data.email);
+            } else {
+              throw new Error('Invalid token');
+            }
+          } else {
+            throw new Error('Token validation failed');
+          }
+        } catch (error) {
+          console.error('❌ Token validation failed:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initializeUser();
+  }, []);
 
   const value = {
     user,
