@@ -78,7 +78,7 @@ console.log('📝 REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
 console.log('🌍 NODE_ENV:', process.env.NODE_ENV);
 console.log('🎯 Final API_BASE_URL:', API_BASE_URL);
 
-sur// Configure axios defaults
+// Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
 console.log('🌐 API_BASE_URL configured:', API_BASE_URL);
 
