@@ -401,11 +401,22 @@ app.all('/api/*', async (req, res) => {
       user = fallbackUsers.find(u => u.email === email && u.password === password);
     }
     
-    if (!user || user.password !== password) {
-      console.log('❌ Invalid credentials for:', email);
+    if (!user) {
+      console.log('❌ User not found for email:', email);
+      console.log('📋 Available users:', users.map(u => ({ email: u.email, username: u.username })));
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid credentials' 
+        message: 'User not found' 
+      });
+    }
+    
+    if (user.password !== password) {
+      console.log('❌ Password mismatch for:', email);
+      console.log('🔍 Expected password length:', password.length);
+      console.log('🔍 Stored password length:', user.password ? user.password.length : 'undefined');
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid password' 
       });
     }
 
@@ -987,7 +998,18 @@ app.all('/api/*', async (req, res) => {
             createdFromSubmission: submission._id
           };
           
-          // Add user to users array
+          // Try to save to MongoDB if available
+          if (mongoConnected && User) {
+            try {
+              const mongoUser = new User(newUser);
+              await mongoUser.save();
+              console.log('✅ User saved to MongoDB:', newUser.email);
+            } catch (dbError) {
+              console.log('❌ MongoDB user save failed:', dbError.message);
+            }
+          }
+          
+          // Add user to users array (fallback)
           users.push(newUser);
           
           // Update submission status
